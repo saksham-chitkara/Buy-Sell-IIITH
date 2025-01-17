@@ -14,6 +14,8 @@ const userSchema = z.object({
     password: z.string()
 });
 
+const schema_without_pass = userSchema.omit({ password: true });
+
 function validateInput(req, res, next){
     const response = userSchema.safeParse(req.body);
     if(response.success){
@@ -27,6 +29,20 @@ function validateInput(req, res, next){
     }
 }
 
-export { validateInput };
+function validateInput_without_pass(req, res, next){
+    req.body.age = Number(req.body.age);
+    const response = schema_without_pass.safeParse(req.body);
+    if(response.success){
+        next();
+    }
+    else{
+        res.status(401).json({
+            msg : "Please enter correct data!"
+        })
+        console.log(response.error);
+    }
+}
+
+export { validateInput, validateInput_without_pass};
 
 

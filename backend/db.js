@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import AutoIncrementFactory from 'mongoose-sequence';
+
+const AutoIncrement = AutoIncrementFactory(mongoose.connection);
 
 //User Schema
 const user = new mongoose.Schema({
@@ -29,6 +32,7 @@ const user = new mongoose.Schema({
     contact_no: {
         type: String,
         required: true,
+        unique: true
     },
 
     password: {
@@ -60,6 +64,11 @@ const user = new mongoose.Schema({
 
 // Item Schema
 const item = new mongoose.Schema({
+    id : {
+        type: Number,
+        unique: true
+    },
+
     name: {
         type: String,
         required: true,
@@ -91,6 +100,7 @@ const item = new mongoose.Schema({
     }
 });
 
+item.plugin(AutoIncrement, { inc_field: 'id' }); // Auto-increments the `id` field
 
 //Order Schema
 const order = new mongoose.Schema({
