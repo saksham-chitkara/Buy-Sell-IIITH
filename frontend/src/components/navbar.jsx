@@ -30,7 +30,7 @@ export default function Navbar(){
                 </div>
 
                 <div>
-                    <a href="/orders">
+                    <a href="/history">
                         <button className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none">
                             Orders History
                         </button>
@@ -49,6 +49,14 @@ export default function Navbar(){
                     <a href="/cart">
                         <button className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none">
                             My Cart
+                        </button>
+                    </a>
+                </div>
+
+                <div>
+                    <a href="/sell">
+                        <button className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none">
+                            Sell an Item
                         </button>
                     </a>
                 </div>

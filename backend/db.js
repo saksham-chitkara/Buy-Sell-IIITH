@@ -45,6 +45,17 @@ const user = new mongoose.Schema({
         ref: 'Item' 
     }],
 
+    orders_received: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order' 
+    }],
+
+    orders_placed: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order' 
+    }],
+
+
     // abhi k liye isme sirf text h kuch aur dalna ho to dkhio
     //**
     // 
@@ -97,20 +108,19 @@ const item = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    }
+    },
+
+    status: {
+        type: String,
+        required: true,
+        enum: ['available', 'sold'] 
+    },
 });
 
-item.plugin(AutoIncrement, { inc_field: 'id' }); // Auto-increments the `id` field
+item.plugin(AutoIncrement, { inc_field: 'id' }); 
 
 //Order Schema
 const order = new mongoose.Schema({
-    transactionId: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-
     buyerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User', 
@@ -123,10 +133,16 @@ const order = new mongoose.Schema({
         required: true
     },
 
-    amount: {
-        type: Number,
+    itemId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Item',
+        required: true
+    },
+
+    status: {
+        type: String,
         required: true,
-        min: 0
+        enum: ['pending', 'completed'] 
     },
 
     hashedOtp: {

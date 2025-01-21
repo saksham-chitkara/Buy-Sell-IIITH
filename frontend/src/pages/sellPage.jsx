@@ -2,9 +2,9 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import { useEffect } from "react";
 import axios from "axios";
-import ItemComponent from "../components/item";
+import SellComponent from "../components/sell";
 
-export default function ItemPage(){
+export default function SellPage(){
     const navigate = useNavigate();
 
     useEffect(() =>{
@@ -34,7 +34,7 @@ export default function ItemPage(){
     return (
         <>
             <Navbar></Navbar>
-            <ItemComponent></ItemComponent>
+            <SellComponent></SellComponent>
         </>
     )
 }
