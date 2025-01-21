@@ -35,10 +35,7 @@ export default function HistoryComponent() {
         try {
             const token = localStorage.getItem('token');
 
-            const response = await axios.post(
-                `http://localhost:3000/api/regenerate/${orderId}`,
-                {},
-                {
+            const response = await axios.post(`http://localhost:3000/api/regenerate/${orderId}`, {},{
                     headers: {
                         Authorization: token,
                     },
@@ -46,7 +43,7 @@ export default function HistoryComponent() {
             );
 
             const new_otp = response.data.new_otp;
-            console.log(new_otp);
+            // console.log(new_otp);
 
             setPendingOrders((prev_orders) =>
                 prev_orders.map((order) =>

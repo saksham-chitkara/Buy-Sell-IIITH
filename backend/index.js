@@ -6,7 +6,7 @@ import { Item, User , Order} from "./db.js";
 import bcrypt from "bcrypt";
 import { jwt_auth } from "./middlewares/jwtauth.js";
 import cors from "cors";
-import crypto from 'crypto';
+import crypto, { setEngine } from 'crypto';
 
 const app = express();
 mongoose.connect("mongodb+srv://sakshamchitkara:Saksham@cluster0.fx609kp.mongodb.net/assignment1");
@@ -256,7 +256,7 @@ app.post("/api/cart", async function (req, res){
         // }
 
         if(!user.cart_items.some((cart_item) => cart_item._id.toString() === item._id.toString())){ //no duplicate abhi k liye to
-            console.log("here2");
+            // console.log("here2");
             user.cart_items.push(item._id);
         }
         
@@ -278,7 +278,9 @@ app.post("/api/cart", async function (req, res){
 app.get('/api/cart', async function(req, res){
     try{
         const user = await User.findById(req.user._id).populate('cart_items');
-        // console.log(user.cart_items);
+        console.log(user.cart_items);
+
+        const cart_items = (user.cart_items.filter((item) => {item.status === "available"}))
 
         res.status(200).json({ 
             cart_items: user.cart_items 
@@ -320,7 +322,7 @@ app.post('/api/cart/order', async function (req, res) {
         const user = await User.findById(req.user._id).populate('cart_items');
 
         for(const item of user.cart_items){
-            const otp = crypto.randomBytes(3).toString('hex'); 
+            const otp = Math.floor(1000 + Math.random() * 9000).toString(); 
             const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
             //yt video p dkha tha hash.... thapa technical
             // abhi aise hi daal diya h baad mein to regenerate hi krna... tab update hi krna
@@ -382,7 +384,7 @@ app.get('/api/history', async function (req, res){
             ],
         });
 
-        const pending_orders = user.orders_placed.filter(order => order.status === 'pending').map(order => ({
+        const pending_orders = user.orders_placed.filter(order => order.status === 'pending' && order.itemId.status !== 'sold').map(order => ({
             id: order._id,
             name: order.itemId.name,
             price: order.itemId.price,
@@ -448,6 +450,83 @@ app.post('/api/regenerate/:order_id', async function (req, res) {
         console.log(err);
         res.status(401).json({
             msg: 'Failed to regenerate OTP' 
+        });
+    }
+});
+
+//deliver items page k related routes
+app.post('/api/orders/complete/:order_id', async function (req, res){
+    const order_id = req.params.order_id;
+    const entered_otp = req.body.entered_otp;
+
+    try {
+        const order = await Order.findById(order_id);
+        if(!order){
+            return res.status(401).json({
+                msg: 'Order not found' 
+            });
+        }
+        
+        const hash = crypto.createHash('sha256').update(entered_otp).digest('hex');
+
+        if(hash !== order.hashedOtp) {
+            return res.status(401).json({
+                msg: 'Invalid OTP' 
+            });
+        }
+
+        order.status = 'completed';
+        await order.save();
+
+        const item = await Item.findById(order.itemId);
+        if(item){
+            item.status = 'sold';
+            await item.save();
+        }
+
+        return res.status(200).json({ 
+            msg: 'Transaction completed successfully!' 
+        });
+    } 
+    
+    catch(err){
+        console.log(err);
+        res.status(401).json({ 
+            msg: 'Transaction failed!' 
+        });
+    }
+});
+
+app.get('/api/orders/pending', async function (req, res) {
+    const sellerId = req.user._id;
+    try {
+        
+        const pending_orders = await Order.find({ sellerId, status: 'pending' }).populate('buyerId', 'first_name last_name')
+        .populate('itemId', 'name price status'); 
+
+        console.log(pending_orders);
+        const to_be_sent = pending_orders.filter((order) => {return order.itemId.status === 'available'}) //for pt 2 in README
+        .map((order) => {
+            return {
+                id: order._id,
+                name: order.itemId.name,
+                price: order.itemId.price,
+                buyer: `${order.buyerId.first_name} ${order.buyerId.last_name}`,
+            };
+        });
+
+        console.log(to_be_sent);
+
+        res.status(200).json({
+            to_be_sent,
+        });
+
+    } 
+    
+    catch(err){
+        console.log(err);
+        res.status(401).json({ 
+            msg: 'Error in retrieving pending order!' 
         });
     }
 });

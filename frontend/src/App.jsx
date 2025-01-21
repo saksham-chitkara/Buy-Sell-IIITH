@@ -1,4 +1,4 @@
-import { BrowserRouter ,Routes, Route } from 'react-router-dom';
+import { BrowserRouter , Routes, Route } from 'react-router-dom';
 import './App.css';
 import LoginPage from './pages/loginPage';
 import SignupPage from './pages/signupPage';
@@ -8,6 +8,7 @@ import ItemPage from './pages/itemPage';
 import CartPage from './pages/mycartPage';
 import SellPage from './pages/sellPage';
 import HistoryPage from './pages/historyPage';
+import DeliverItemsPage from './pages/deliverItemsPage';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
         <Route path ="/cart" element={<CartPage />} />
         <Route path ="/sell" element={<SellPage />} />
         <Route path ="/history" element={<HistoryPage />} />
-        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+        <Route path ="/deliver" element={<DeliverItemsPage />} />
       </Routes>
     </BrowserRouter>
   );
