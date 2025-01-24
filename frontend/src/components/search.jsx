@@ -52,35 +52,37 @@ export default function SearchItemsPage() {
     };
 
     return(
-        <div className="p-4">            
-            <div className="flex items-center border rounded-md overflow-hidden shadow-md mb-6">
-                <input type="text" placeholder="Search..." 
-                    value={searched} 
-                    onChange={(e) => {
-                        setSearched(e.target.value);
-                    }}
-                    className="flex-1 p-2 outline-none"/>
-                
-                <button
-                    onClick={search}
-                    className="p-2 bg-orange-400 hover:bg-orange-500 text-white"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        className="w-5 h-5"
+        <div className="p-4"> 
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+            <style>{`
+                .material-symbols-outlined {
+                font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+                }
+            `}</style>
+
+            <div className='flex justify-center'>        
+                <div className="flex items-center border rounded-md overflow-hidden shadow-md mb-6 mt-20 w-1/2 ml-30">
+                    <input type="text" placeholder="Search..." 
+                        value={searched} 
+                        onChange={(e) => {
+                            setSearched(e.target.value);
+                        }}
+                        className="flex-1 p-2 outline-none"/>
+
+                    <button
+                        onClick={search}
+                        className="p-2 pt-3"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M21 21l-4.35-4.35m-1.15-4.65a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
-                        />
-                    </svg>
-                </button>
-            </div>
+                        <span class="material-symbols-outlined">
+                            search
+                        </span>
+                    </button>
+                </div>
+            </div>   
 
             <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">Filter by Categories</h2>

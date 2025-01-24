@@ -9,6 +9,7 @@ import CartPage from './pages/mycartPage';
 import SellPage from './pages/sellPage';
 import HistoryPage from './pages/historyPage';
 import DeliverItemsPage from './pages/deliverItemsPage';
+import ChatBot from './pages/chatPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path ="/sell" element={<SellPage />} />
         <Route path ="/history" element={<HistoryPage />} />
         <Route path ="/deliver" element={<DeliverItemsPage />} />
+        <Route path ="/chat" element={<ChatBot />} />
       </Routes>
     </BrowserRouter>
   );

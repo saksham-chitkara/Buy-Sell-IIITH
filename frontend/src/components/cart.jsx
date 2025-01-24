@@ -81,8 +81,10 @@ export default function CartComponent(){
     }
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">My Cart</h1>
+        <div className="h-screen w-screen bg-gray-100 flex justfy-center pt-12">
+
+        <div className="p-6">
+            <div className="text-2xl font-bold mb-4 pt-3">My Cart</div>
 
             {cartItems.length === 0 ? (
                 <p>Your cart is empty.</p>
@@ -122,6 +124,7 @@ export default function CartComponent(){
                     </button>
                 </div>
             )}
+        </div>
         </div>
     );
 }

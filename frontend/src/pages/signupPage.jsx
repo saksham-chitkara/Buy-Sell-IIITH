@@ -29,6 +29,6 @@ export default function SignupPage(){
     }, []);
 
     return (
-        <SignupComponent></SignupComponent>
+        <SignupComponent />
     );
 }

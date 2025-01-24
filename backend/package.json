@@ -10,13 +10,19 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.7.9",
+    "axios-retry": "^4.5.0",
     "bcrypt": "^5.1.1",
+    "cas": "^0.0.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "mongoose-sequence": "^6.0.1",
+    "openai": "^4.80.0",
     "zod": "^3.24.1"
   }
 }
