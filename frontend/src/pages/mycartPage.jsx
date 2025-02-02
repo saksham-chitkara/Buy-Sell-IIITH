@@ -3,6 +3,7 @@ import Navbar from "../components/navbar";
 import { useEffect } from "react";
 import axios from "axios";
 import CartComponent from "../components/cart";
+import Chatbot from "./chatPage";
 
 export default function CartPage(){
     const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function CartPage(){
         <>
             <Navbar></Navbar>
             <CartComponent></CartComponent>
+            {/* <Chatbot></Chatbot> */}
         </>
     )
 }

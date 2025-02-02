@@ -25,7 +25,7 @@ function App() {
         <Route path ="/sell" element={<SellPage />} />
         <Route path ="/history" element={<HistoryPage />} />
         <Route path ="/deliver" element={<DeliverItemsPage />} />
-        <Route path ="/chat" element={<ChatBot />} />
+        {/* <Route path ="/chat" element={<ChatBot />} /> */}
       </Routes>
     </BrowserRouter>
   );

@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export default function LoginComponent() {
     const [email, setEmail] = useState('');
@@ -9,6 +11,7 @@ export default function LoginComponent() {
     const [error, setError] = useState('');
     const [captchaToken, setCaptchaToken] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [passwordVisible, setPasswordVisible] = useState(false); 
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -101,6 +104,7 @@ export default function LoginComponent() {
 
     return (
         <div className="flex h-screen">
+
             <div className="w-1/2 flex items-center justify-center bg-gray-100">
                 <div className="relative mx-auto w-full max-w-md bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:rounded-xl sm:px-10">
                     <div className="w-full">
@@ -123,12 +127,23 @@ export default function LoginComponent() {
                             <div className="relative mt-6">
                                 <input
                                     onChange={(e) => setPassword(e.target.value)}
-                                    type="password"
+                                    type={passwordVisible ? "text" : "password"} 
                                     name="password"
                                     id="password"
                                     placeholder="Password"
-                                    className="peer mt-1 w-full border-b-2  px-0 py-1  focus:outline-none"
+                                    className="peer mt-1 w-full border-b-2 px-0 py-1 pr-10 focus:outline-none"
                                 />
+
+                                <span
+                                    className="absolute right-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                    onClick={() => setPasswordVisible(!passwordVisible)}
+                                >
+                                    {passwordVisible ? (
+                                        <VisibilityIcon style={{ color: "gray" }} />
+                                    ) : (
+                                        <VisibilityOffIcon style={{ color: "gray" }} />
+                                    )}
+                                </span>
                             </div>
 
                             <div className="my-6 flex justify-center w-full">
@@ -153,7 +168,7 @@ export default function LoginComponent() {
                             <div className="my-6">
                                 <button
                                     onClick={loginWithCAS}
-                                    className="w-full rounded-md bg-[#4CAF50] px-3 py-1.5 text-white hover:bg-[#45a049] focus:outline-none text-lg"
+                                    className="w-full rounded-md bg-[#3D5AF1] px-3 py-1.5 text-white hover:bg-[#1877F2] focus:outline-none text-lg"
                                 >
                                     Login with CAS
                                 </button>

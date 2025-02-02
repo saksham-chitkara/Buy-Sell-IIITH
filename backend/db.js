@@ -115,6 +115,17 @@ const item = new mongoose.Schema({
         required: true,
         enum: ['available', 'sold'] 
     },
+
+    image: {
+        public_id:{
+            type: String,
+            required: true
+        } ,
+        url:{
+            type: String,
+            required: true
+        }
+    },
 });
 
 item.plugin(AutoIncrement, { inc_field: 'id' }); 

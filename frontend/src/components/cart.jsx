@@ -47,6 +47,7 @@ export default function CartComponent(){
             );
             const tot = total - price;
             setTotal(tot);
+            location.reload();
         } 
         catch(err){
             console.log(err);
@@ -56,7 +57,7 @@ export default function CartComponent(){
     const order = async () => {
         try{
             const token = localStorage.getItem('token');
-            console.log(token);
+            // console.log(token);
             await axios.post("http://localhost:3000/api/cart/order",{}, {
                 headers: { 
                     Authorization: token
@@ -66,6 +67,7 @@ export default function CartComponent(){
             alert('Order placed successfully!');
             setCartItems([]);
             setTotal(0);
+            location.reload();
         } 
 
         catch(err){

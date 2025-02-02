@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,9 +8,11 @@ export default function SellComponent(){
         price: '',
         description: '',
         category: '',
+        image:' '
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = useRef(null); // Add a reference for the file input
     const navigate = useNavigate();
 
     const update = (e) => {
@@ -21,11 +23,34 @@ export default function SellComponent(){
         });
     };
 
+    const handleImage = (e) =>{
+        const file = e.target.files[0];
+        setFileToBase(file);
+        console.log(file);
+    }
+
+    const setFileToBase = (file) =>{
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onloadend = () => {
+            console.log("Base64 string generated:", reader.result);
+            setItemData({
+                ...itemData,
+                image: reader.result, // Assign base64 to image key
+            });
+        };
+
+        reader.onerror = (error) => {
+            console.error("Error reading file:", error);
+        };
+    }
+
     const submit = async () => {
         setIsSubmitting(true);
         try {
 
-            if(!itemData.name || !itemData.description || !itemData.price || !itemData.category){
+            if(!itemData.name || !itemData.description || !itemData.price || !itemData.category || !itemData.image){
                 alert("Please fill all the details");
                 setIsSubmitting(false);
                 return;
@@ -46,7 +71,12 @@ export default function SellComponent(){
                 price: '',
                 description: '',
                 category: '',
+                image: '', // Clear the image in state
             });
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''; // Reset the file input value
+            }
 
         } 
         
@@ -104,6 +134,17 @@ export default function SellComponent(){
                             <option value="others">Others</option>
                         </select>
                     </div>
+                </div>
+
+                <div className="form-outline mt-6">
+                    <input 
+                        ref={fileInputRef} // Attach the ref to the file input
+                        onChange={handleImage} 
+                        type="file" 
+                        id="formupload" 
+                        name="image" 
+                        className="form-control rounded pl-0.5"  
+                    />
                 </div>
 
                 <div className="flex justify-end mt-6">

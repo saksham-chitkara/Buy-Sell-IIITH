@@ -25,6 +25,7 @@ export default function SearchPage(){
                     return;
                 }
             }
+            
             else{
                 navigate("/login"); 
             }

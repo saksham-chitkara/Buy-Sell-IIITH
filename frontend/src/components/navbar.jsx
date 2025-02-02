@@ -1,31 +1,38 @@
-import React from 'react';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Navbar(){
+export default function Navbar() {
+    const [cartCount, setCartCount] = useState(0);
     const navigate = useNavigate();
 
-    function logout_func(){
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:3000/api/cart/count', {
+            headers: {
+                Authorization: token
+            },
+        })
+        .then((res) => {
+            setCartCount(res.data.cart_count);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    }, []);
+
+    function logout_func() {
         alert("Logged out successfully!");
         localStorage.removeItem("token");
         navigate("/login");
     }
 
     return (
-        <div className="bg-[#080E20] p-3.5 fixed top-0 left-0 w-full z-20 shadow-md">   
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=shopping_cart" />
-            <style>{`
-                .material-symbols-outlined {
-                font-variation-settings:
-                'FILL' 0,
-                'wght' 400,
-                'GRAD' 0,
-                'opsz' 24
-                }
-            `}</style>
-            
+        <div className="bg-[#080E20] p-3.5 fixed top-0 left-0 w-full z-20 shadow-md">
             <div className="flex space-x-4 justify-between">
                 <div>
-                    <button  disabled className="pl-3 text-3xl text-white rounded-md focus:outline-none font-cursive">
+                    <button disabled className="pl-3 text-3xl text-white rounded-md focus:outline-none font-cursive">
                         CampusMart
                     </button>
                 </div>
@@ -63,14 +70,16 @@ export default function Navbar(){
                         </a>
                     </div>
 
-                    <div>
+                    <div className="relative">
                         <a href="/cart">
-                            <button className="bg-[#1877F2] text-white pt-2 pb-0.5 px-4 rounded-md hover:bg-[#3D5AF1] focus:outline-none text-lg">
-                            <span className="material-symbols-outlined">
-                                shopping_cart
-                            </span>
+                            <button className="bg-[#1877F2] text-white pt-1.5 pb-1.5 px-4 rounded-md hover:bg-[#3D5AF1] focus:outline-none text-lg">
+                                <ShoppingCartIcon />
                             </button>
                         </a>
+
+                        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {cartCount}
+                        </div>
                     </div>
 
                     <div>
@@ -83,11 +92,10 @@ export default function Navbar(){
                 </div>
 
                 <div>
-                    <button onClick={logout_func}className="bg-red-500 text-white py-1.5 px-4 rounded-md hover:bg-red-700 focus:outline-none text-lg">
+                    <button onClick={logout_func} className="bg-red-500 text-white py-1.5 px-4 rounded-md hover:bg-red-700 focus:outline-none text-lg">
                         Logout
                     </button>
                 </div>
-
             </div>
         </div>
     );

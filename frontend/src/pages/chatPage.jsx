@@ -9,43 +9,39 @@ export default function Chatbot() {
     const [sessionId, setSessionId] = useState(null);
     const messagesEndRef = useRef(null);
 
+    useEffect(() => {
+        const startNewSession = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:3000/api/chat/new-session', {
+                    headers:{
+                        Authorization: token
+                    }
+                });
+                setSessionId(response.data.sessionId);
+                
+                const welcomeResponse = await axios.post('http://localhost:3000/api/chat', {
+                    sessionId: response.data.sessionId
+                },{
+                    headers:{
+                        Authorization: token
+                    }
+                });
+                
+                setMessages([{
+                    sender: 'ai', 
+                    text: welcomeResponse.data.response 
+                }]);
 
-
-        useEffect(() => {
-            // Start new session when component mounts
-            const startNewSession = async () => {
-                try {
-                    const response = await axios.get('http://localhost:3000/api/chat/new-session', {
-                        headers:{
-                            Authorization: localStorage.getItem('token')
-                        }
-                    });
-                    setSessionId(response.data.sessionId);
-                    
-
-                    // Fetch initial welcome message
-                    const welcomeResponse = await axios.post('http://localhost:3000/api/chat', {
-                        sessionId: response.data.sessionId
-                    },{
-                        headers:{
-                            Authorization: localStorage.getItem('token')
-                        }
-                    });
-                    
-                    // Add welcome message to messages
-                    setMessages([{
-                        sender: 'ai', 
-                        text: welcomeResponse.data.response 
-                    }]);
-                    setIsOpen(true);
-                } catch (error) {
-                    console.error('Session start error:', error);
-                }
-            };
-        
-            startNewSession();
-        }, []);
-
+            } 
+            
+            catch(error){
+                console.error('Session start error:', error);
+            }
+        };
+    
+        startNewSession();
+    }, []);
 
 
     const scrollToBottom = () => {
@@ -68,12 +64,14 @@ export default function Chatbot() {
         setInput('');
 
         try {
+            const token = localStorage.getItem('token');
+
             const response = await axios.post('http://localhost:3000/api/chat', {
                 message: input,
                 sessionId
             },{
                 headers:{
-                    Authorization: localStorage.getItem('token')
+                    Authorization: token
                 }
             });
 
@@ -83,8 +81,10 @@ export default function Chatbot() {
             };
 
             setMessages(prev => [...prev, aiMessage]);
-        } catch (error) {
-            console.error('Message send error:', error);
+        } 
+        
+        catch(err){
+            console.log(err);
         }
     };
 
@@ -97,10 +97,12 @@ export default function Chatbot() {
                 >
                     <MessageCircle color="white" />
                 </button>
+
             ) : (
                 <div className="bg-white w-96 h-[500px] rounded-lg shadow-2xl border flex flex-col">
                     <div className="bg-blue-500 text-white p-3 rounded-lg flex justify-between items-center">
                         <h2>Support</h2>
+
                         <button onClick={() => setIsOpen(false)}>
                             <X color="white" />
                         </button>
@@ -119,6 +121,7 @@ export default function Chatbot() {
                                 {msg.text}
                             </div>
                         ))}
+
                         <div ref={messagesEndRef} />
                     </div>
 
@@ -131,6 +134,7 @@ export default function Chatbot() {
                             placeholder="Ask something..."
                             className="flex-1 p-2 border rounded-l-lg"
                         />
+
                         <button 
                             onClick={sendMessage}
                             className="bg-blue-500 p-2 rounded-r-lg"

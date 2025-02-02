@@ -3,6 +3,7 @@ import Navbar from "../components/navbar";
 import ProfileComponent from "../components/profile";
 import { useEffect } from "react";
 import axios from "axios";
+import Chatbot from "./chatPage";
 
 export default function ProfilePage(){
     const navigate = useNavigate();
@@ -35,6 +36,7 @@ export default function ProfilePage(){
         <>
             <Navbar></Navbar>
             <ProfileComponent></ProfileComponent>
+            {/* <Chatbot></Chatbot> */}
         </>
     )
 }

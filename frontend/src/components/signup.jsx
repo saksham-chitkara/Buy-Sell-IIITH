@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
 
 export default function SignupComponent() {
     const [email, setEmail] = useState('');
@@ -10,6 +13,7 @@ export default function SignupComponent() {
     const [contact_no, setContact] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false); 
 
     const navigate = useNavigate();
 
@@ -79,8 +83,26 @@ export default function SignupComponent() {
                         
                         </div>
 
-                        <div className="relative mt-4"> 
-                            <input onChange={(e) => setPassword(e.target.value)} type="password" name="password" id="password" placeholder="Password" className="peer peer mt-1 w-full border-b-2 border-gray-300 px-0 py-1 className focus:border-gray-500 focus:outline-none" />
+                        <div className="relative mt-4">
+                            <input
+                                onChange={(e) => setPassword(e.target.value)}
+                                type={passwordVisible ? "text" : "password"} 
+                                name="password"
+                                id="password"
+                                placeholder="Password"
+                                className="peer mt-1 w-full border-b-2 px-0 py-1 pr-10 focus:outline-none"
+                            />
+
+                            <span
+                                className="absolute right-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                                onClick={() => setPasswordVisible(!passwordVisible)}
+                            >
+                                {passwordVisible ? (
+                                    <VisibilityIcon style={{ color: "gray" }} />
+                                ) : (
+                                    <VisibilityOffIcon style={{ color: "gray" }} />
+                                )}
+                            </span>
                         </div>
 
                         <div className="my-6">
@@ -104,7 +126,7 @@ export default function SignupComponent() {
 
         <div className="w-[2px] bg-[#4C3BCF]"></div>
 
-        <div className="w-1/2 flex items-center justify-center bg-[#0A102E] text-white p-12 sm:p-16">
+        <div className="w-1/2 flex items-center justify-center bg-[#080E20] text-white p-12 sm:p-16">
             <div className="max-w-lg text-center">
                 <h1 className="text-6xl font-extrabold mb-6 font-serif text-[#4db1ff]">
                     CampusMart

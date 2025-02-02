@@ -11,13 +11,15 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import dotenv from "dotenv";
 import { verifyCaptcha } from "./middlewares/verifyCaptcha.js";
+import {cloudinary} from "./cloudinary.js";
 dotenv.config();
 
 const app = express();
 mongoose.connect("mongodb+srv://sakshamchitkara:Saksham@cluster0.fx609kp.mongodb.net/assignment1");
 const jwtpass = process.env.JWT_SECRET;
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" })); 
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
 
 import CAS from 'cas';
@@ -32,7 +34,6 @@ var cas = new CAS({
 
 app.get('/api/cas-login', (req, res) => {
     const loginUrl = `${baseUrl}/login?service=${encodeURIComponent(cas.service)}`;
-    console.log(loginUrl);
 
     res.json({
         redirectUrl: loginUrl
@@ -98,6 +99,7 @@ app.post("/api/login", verifyCaptcha, async function(req, res){
     // console.log(req.body);
     const email = req.body.email;
     const password = req.body.password;
+    // console.log(password);
 
     const user = await User.findOne({ email });
     if(!user){
@@ -154,6 +156,7 @@ app.put("/api/profile", validateInput_without_pass, async function(req, res){
     const email = decoded.email;
 
     const user = await User.findOne({ email });
+    const hashed_pass = await bcrypt.hash(req.body.password, 10);
 
     try{
         const updatedData = {
@@ -161,6 +164,7 @@ app.put("/api/profile", validateInput_without_pass, async function(req, res){
             last_name: req.body.last_name,
             age: req.body.age,
             contact_no: req.body.contact_no,
+            password: hashed_pass
         };
 
         await User.updateOne({ email }, updatedData);
@@ -195,6 +199,7 @@ app.get('/api/items', async function(req, res){
             description: item.description,
             category: item.category,
             vendor: `${item.sellerId.first_name} ${item.sellerId.last_name}`,
+            image: item.image,
         }));
 
         res.status(200).json({
@@ -234,6 +239,7 @@ app.get('/api/items/:id', async function (req, res) {
             description: item.description,
             category: item.category,
             vendor: `${item.sellerId.first_name} ${item.sellerId.last_name}`,
+            image: item.image,
         });
     } 
     catch(err){
@@ -245,17 +251,25 @@ app.get('/api/items/:id', async function (req, res) {
 });
 
 app.put('/api/sell', async function(req, res){
+
     try{
         const user_ki_id = req.user._id;
 
-        var { name, price, description, category } = req.body;
-        if(!name || !price || !description || !category){
+        var { name, price, description, category, image } = req.body;
+
+        if(!name || !price || !description || !category || !image){
             return res.status(400).json({
                 msg: "All fields are required."
             });
         }
 
         price = Number(price);
+
+        const result = await cloudinary.uploader.upload(image, {
+            folder: "products",
+            // width: 300,
+            // height: 300,
+        })
 
         const new_item = new Item({
             name,
@@ -264,7 +278,13 @@ app.put('/api/sell', async function(req, res){
             category,
             sellerId: user_ki_id,
             status: "available",
+            image: {
+                public_id: result.public_id,
+                url: result.secure_url
+            },
         });
+
+        console.log(result.secure_url);
 
         await new_item.save();
 
@@ -324,7 +344,7 @@ app.post("/api/cart", async function (req, res){
 app.get('/api/cart', async function(req, res){
     try{
         const user = await User.findById(req.user._id).populate('cart_items');
-        console.log(user.cart_items);
+        // console.log(user.cart_items);
 
         const cart_items = (user.cart_items.filter((item) => {item.status === "available"}))
 
@@ -361,6 +381,29 @@ app.delete('/api/cart/:item_id', async function (req, res){
         });
     }
 });
+
+
+app.get('/api/cart/count', async function (req, res) {
+    try {
+        const user = await User.findById(req.user._id).populate('cart_items');
+
+        const cart_count = user.cart_items.length;
+        // console.log(cart_count);
+
+        res.json({ 
+            cart_count
+        });
+    } 
+    
+    catch(err){
+        console.log(err)
+        res.status(401).json({ 
+            msg: 'Server error' 
+        });
+    }
+});
+
+
 
 
 app.post('/api/cart/order', async function (req, res) {
@@ -550,7 +593,7 @@ app.get('/api/orders/pending', async function (req, res) {
         const pending_orders = await Order.find({ sellerId, status: 'pending' }).populate('buyerId', 'first_name last_name')
         .populate('itemId', 'name price status'); 
 
-        console.log(pending_orders);
+        // console.log(pending_orders);
         const to_be_sent = pending_orders.filter((order) => {return order.itemId.status === 'available'}) //for pt 2 in README
         .map((order) => {
             return {
@@ -628,6 +671,7 @@ app.get('/api/orders/pending', async function (req, res) {
 
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Cloudinary } from "@cloudinary/url-gen/index";
 
 const conversationSessions = new Map();
 
