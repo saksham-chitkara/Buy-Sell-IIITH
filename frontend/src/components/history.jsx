@@ -138,7 +138,11 @@ export default function HistoryComponent() {
     };
 
     if (loading) {
-        return <div>Loading....</div>;
+        return (
+            <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+                <div className="w-12 h-12 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+        );
     }
 
     const current_tab = () => {
@@ -300,8 +304,7 @@ export default function HistoryComponent() {
     return (
         <div className="min-h-screen bg-gray-100 p-20">
             <link
-                rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=autorenew"
+                rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=autorenew"
             />
             <style>{`
                 .material-symbols-outlined {
@@ -378,9 +381,6 @@ export default function HistoryComponent() {
                     </div>
                 </div>
             )}
-
-            
         </div>
     )
 }
-

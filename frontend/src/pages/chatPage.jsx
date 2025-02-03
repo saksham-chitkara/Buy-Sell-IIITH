@@ -7,6 +7,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [sessionId, setSessionId] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -62,6 +63,7 @@ export default function Chatbot() {
 
         setMessages(prev => [...prev, userMessage]);
         setInput('');
+        setIsLoading(true);
 
         try {
             const token = localStorage.getItem('token');
@@ -85,6 +87,9 @@ export default function Chatbot() {
         
         catch(err){
             console.log(err);
+        }
+        finally {
+            setIsLoading(false);
         }
     };
 
@@ -121,6 +126,12 @@ export default function Chatbot() {
                                 {msg.text}
                             </div>
                         ))}
+                        
+                        {isLoading && (
+                            <div className="flex justify-center items-center p-2">
+                                <div className="w-5 h-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                            </div>
+                        )}
 
                         <div ref={messagesEndRef} />
                     </div>

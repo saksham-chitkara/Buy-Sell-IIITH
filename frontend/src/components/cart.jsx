@@ -72,7 +72,11 @@ export default function CartComponent() {
     };
 
     if (loading) {
-        return <p>Loading........</p>;
+        return (
+            <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+                <div className="w-12 h-12 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+        );
     }
 
     if (cartItems.length === 0) {

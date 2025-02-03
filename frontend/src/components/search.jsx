@@ -7,6 +7,7 @@ export default function SearchItemsPage() {
     const [searched, setSearched] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [all_items, setAllItems] = useState([]); //isme saare store
+    const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
     const categories = ["grocery", "sports", "academics", "clothing", "others"];
@@ -20,8 +21,10 @@ export default function SearchItemsPage() {
         }).then((res) => {
             setAllItems(res.data.items);
             setItems(res.data.items);
+            setIsLoading(false);
         }).catch((error) => {
             console.error("Error fetching items or categories:", error);
+            setIsLoading(false);
         });
 
     }, []);
@@ -93,41 +96,47 @@ export default function SearchItemsPage() {
                     </div>
                 </div>   
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ml-10">
-                    {items.map((item) => (
-                        <div 
-                            key={item.id}
-                            className="border rounded-lg p-1 hover:shadow-lg cursor-pointer flex flex-col items-center aspect-w-1 aspect-h-1"
-                        >
-                            {item.image && (
-                                <div className="h-[300px] w-[390px] flex justify-center items-center overflow-hidden rounded-lg bg-gray-100">
-                                    <img 
-                                        src={item.image.url} 
-                                        alt={item.name} 
-                                        className="h-full w-full object-cover transform transition-transform duration-300 hover:scale-110"
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <div className="w-12 h-12 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ml-10">
+                        {items.map((item) => (
+                            <div 
+                                key={item.id}
+                                className="border rounded-lg p-1 hover:shadow-lg cursor-pointer flex flex-col items-center aspect-w-1 aspect-h-1"
+                            >
+                                {item.image && (
+                                    <div className="h-[300px] w-[390px] flex justify-center items-center overflow-hidden rounded-lg bg-gray-100">
+                                        <img 
+                                            src={item.image.url} 
+                                            alt={item.name} 
+                                            className="h-full w-full object-cover transform transition-transform duration-300 hover:scale-110"
+                                            onClick={() => open_item_page(item.id)}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col justify-center items-center mt-1">
+                                    <h3 
+                                        className="font-bold text-lg text-center"
                                         onClick={() => open_item_page(item.id)}
-                                    />
+                                    >
+                                        {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                                    </h3>
+                                    <p className="text-gray-600">Rs {item.price}</p>
                                 </div>
-                            )}
-
-                            <div className="flex flex-col justify-center items-center mt-1">
-                                <h3 
-                                    className="font-bold text-lg text-center"
-                                    onClick={() => open_item_page(item.id)}
-                                >
-                                    {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                                </h3>
-                                <p className="text-gray-600">Rs {item.price}</p>
                             </div>
-                        </div>
-                    ))}
+                        ))}
 
-                    {items.length === 0 && (
-                        <p className="text-center col-span-full text-gray-600">
-                            No items match your search or filters.
-                        </p>
-                    )}
-                </div>
+                        {items.length === 0 && (
+                            <p className="text-center col-span-full text-gray-600">
+                                No items match your search or filters.
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
