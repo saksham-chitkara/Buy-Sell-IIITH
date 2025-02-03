@@ -38,7 +38,7 @@ export default function SignupComponent() {
             // console.log(token);
             localStorage.setItem("token", response.data.token);
             alert("Successfully Signed In!");
-            navigate("/profile");
+            navigate("/search");
         }
         
         catch(err){

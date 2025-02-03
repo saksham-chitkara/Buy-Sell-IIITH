@@ -43,7 +43,7 @@ export default function LoginComponent() {
             setError('');
             const token = response.data.token;
             localStorage.setItem("token", response.data.token);
-            navigate("/profile");
+            navigate("/search");
         } 
         
         catch (err) {
@@ -76,7 +76,7 @@ export default function LoginComponent() {
     
                 localStorage.setItem('token', token);
     
-                navigate('/profile');
+                navigate('/search');
             } 
             
             catch(err){
@@ -91,7 +91,7 @@ export default function LoginComponent() {
         const token = urlParams.get('token');
         if(token){
             localStorage.setItem('token', token);
-            navigate('/profile');
+            navigate('/sea');
         }
     }, [navigate]);
     

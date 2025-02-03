@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function CartComponent(){
+export default function CartComponent() {
     const [loading, setLoading] = useState(true);
     const [cartItems, setCartItems] = useState([]);
     const [total, setTotal] = useState(0);
@@ -11,7 +11,7 @@ export default function CartComponent(){
 
         axios.get('http://localhost:3000/api/cart', {
             headers: { 
-                Authorization:  token
+                Authorization: token
             },
         })
         .then((res) => {
@@ -25,19 +25,18 @@ export default function CartComponent(){
 
     }, []);
 
-    
     const find_total = (items) => {
-        var new_tot = 0;
-        items.map((item) => {
+        let new_tot = 0;
+        items.forEach((item) => {
             new_tot += item.price;
-        })
+        });
         setTotal(new_tot);
     };
 
     const remove = async (itemId, price) => {
-        try{
+        try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:3000/api/cart/${itemId}`,{
+            await axios.delete(`http://localhost:3000/api/cart/${itemId}`, {
                 headers: { 
                     Authorization: token
                 },
@@ -45,20 +44,18 @@ export default function CartComponent(){
             setCartItems((prevItems) =>
                 prevItems.filter((item) => item._id !== itemId)
             );
-            const tot = total - price;
-            setTotal(tot);
-            location.reload();
+            setTotal(total - price);
+            window.location.reload();
         } 
-        catch(err){
+        catch(err) {
             console.log(err);
         }
     };
 
     const order = async () => {
-        try{
+        try {
             const token = localStorage.getItem('token');
-            // console.log(token);
-            await axios.post("http://localhost:3000/api/cart/order",{}, {
+            await axios.post("http://localhost:3000/api/cart/order", {}, {
                 headers: { 
                     Authorization: token
                 },
@@ -67,66 +64,78 @@ export default function CartComponent(){
             alert('Order placed successfully!');
             setCartItems([]);
             setTotal(0);
-            location.reload();
         } 
-
-        catch(err){
+        catch(err) {
             console.log(err);
             alert('Failed to place order.');
         }
     };
 
-    if(loading){
-        return(
-            <p>Loading........</p>
-        )
+    if (loading) {
+        return <p>Loading........</p>;
+    }
+
+    if (cartItems.length === 0) {
+        return (
+            <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-50">
+                <p className="text-2xl font-semibold text-gray-600 mb-4">Your cart is empty</p>
+                <p className="text-gray-500">Add some items to get started!</p>
+            </div>
+        );
     }
 
     return (
-        <div className="h-screen w-screen bg-gray-100 flex justfy-center pt-12">
-
-        <div className="p-6">
-            <div className="text-2xl font-bold mb-4 pt-3">My Cart</div>
-
-            {cartItems.length === 0 ? (
-                <p>Your cart is empty.</p>
-            ) : (
-                <div>
-                    <ul className="mb-4">
+        <div className="min-h-screen w-full bg-gray-50 py-8 px-4 pt-20">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 mt-10">
+                {/* Main cart section */}
+                <div className="flex-grow">
+                    <ul className="space-y-6">
                         {cartItems.map((item) => (
                             <li
                                 key={item._id}
-                                className="flex justify-between items-center mb-2 border-b pb-2"
+                                className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white shadow-sm rounded-xl transition-all hover:shadow-md"
                             >
-                                <div>
-                                    <p className="font-semibold">{item.name}</p>
-                                    <p className="text-gray-700">Rs {item.price}</p>
+                                <img 
+                                    src={item.image.url} 
+                                    alt={item.name} 
+                                    className="w-full sm:w-48 h-40 object-cover rounded-lg"
+                                />
+
+                                <div className="flex-grow space-y-2 text-center sm:text-left">
+                                    <h3 className="font-semibold text-xl text-gray-800">{item.name}</h3>
+                                    <p className="text-gray-700 text-lg font-medium">Rs {item.price.toLocaleString()}</p>
                                 </div>
 
                                 <button
                                     onClick={() => remove(item._id, item.price)}
-                                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors w-full sm:w-auto"
                                 >
                                     Remove
                                 </button>
                             </li>
                         ))}
                     </ul>
-
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="font-bold">Total: </p>
-                        <p className="font-bold text-lg">Rs {total}</p>
-                    </div>
-
-                    <button
-                        onClick={order}
-                        className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                        Final Order
-                    </button>
                 </div>
-            )}
-        </div>
+
+                {/* Order summary sidebar */}
+                <div className="w-full lg:w-80 h-fit">
+                    <div className="bg-white p-6 rounded-xl shadow-sm">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Order Summary</h2>
+                        <div className="border-t pt-4">
+                            <div className="flex justify-between items-center mb-6">
+                                <span className="text-gray-600">Total</span>
+                                <span className="text-2xl font-bold text-gray-800">Rs {total.toLocaleString()}</span>
+                            </div>
+                            <button
+                                onClick={order}
+                                className="w-full px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Place Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

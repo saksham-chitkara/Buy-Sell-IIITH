@@ -65,10 +65,26 @@ const user = new mongoose.Schema({
     // 
     // 
     //  */
-    seller_reviews: [{   
-        type: String,
-        required: true
-    }]
+    seller_reviews: [
+        {
+            reviewerId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'User', 
+                required: true 
+            },
+
+            itemId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'Item', 
+                required: true 
+            },
+
+            text: { 
+                type: String, 
+                required: true 
+            }
+        }
+    ]
 });
 
 
@@ -172,3 +188,6 @@ export {User, Item, Order};
 // input validation zod se krra to yaha correct data hi ayga so no checking by mongo
 // abhi k liye yahi h baad mein edit krlio category of item dalni ho to
 // abhi orders mein transactionID di h vo dkhio normal ID h ya kuch aur agar normal h to htadio kyuki mongo apne aap de deta
+
+
+

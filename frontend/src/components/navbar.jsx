@@ -49,7 +49,7 @@ export default function Navbar() {
                     <div>
                         <a href="/search">
                             <button className="bg-[#1877F2] text-white py-1.5 px-4 rounded-md hover:bg-[#3D5AF1] focus:outline-none text-lg">
-                                Search Items
+                                Shop
                             </button>
                         </a>
                     </div>

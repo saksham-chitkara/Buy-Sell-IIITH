@@ -30,16 +30,18 @@ function validateInput(req, res, next){
 }
 
 function validateInput_without_pass(req, res, next){
+    console.log("hi");
     req.body.age = Number(req.body.age);
     const response = schema_without_pass.safeParse(req.body);
     if(response.success){
         next();
     }
     else{
+        console.log(response.error);
+
         res.status(401).json({
             msg : "Please enter correct data!"
         })
-        console.log(response.error);
     }
 }
 

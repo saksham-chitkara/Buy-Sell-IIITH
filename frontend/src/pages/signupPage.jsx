@@ -17,7 +17,7 @@ export default function SignupPage(){
                             Authorization: token,
                         },
                     });
-                    navigate("/profile"); 
+                    navigate("/search"); 
                 }
                 catch(err){
                     console.log(err);

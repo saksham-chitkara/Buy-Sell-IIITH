@@ -17,7 +17,7 @@ export default function LoginPage(){
                             Authorization: token,
                         },
                     });
-                    navigate("/profile"); 
+                    navigate("/search"); 
                 }
                 catch(err){
                     console.log(err);

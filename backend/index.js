@@ -150,37 +150,44 @@ app.get("/api/profile", async function(req, res){
     });
 })
 
-app.put("/api/profile", validateInput_without_pass, async function(req, res){
+app.put("/api/profile", validateInput_without_pass, async function(req, res) {
+    // console.log("hi2");
     const token = req.headers.authorization;
     const decoded = jwt.verify(token, jwtpass);
     const email = decoded.email;
 
-    const user = await User.findOne({ email });
-    const hashed_pass = await bcrypt.hash(req.body.password, 10);
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
 
-    try{
         const updatedData = {
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             age: req.body.age,
             contact_no: req.body.contact_no,
-            password: hashed_pass
         };
 
-        await User.updateOne({ email }, updatedData);
+        if (req.body.password) {
+            updatedData.password = await bcrypt.hash(req.body.password, 10);
+        }
+
+        await User.updateOne({ email }, { $set: updatedData });
 
         return res.status(200).json({ 
             msg: "Profile updated successfully" 
         });
     } 
     
-    catch(err){
-        // console.error(err);
+    catch (err) {
+        console.error(err);
         return res.status(401).json({ 
-            msg : "Couldn't update the profile" 
+            msg: "Couldn't update the profile" 
         });
-    }   
-})
+    }
+});
+
 
 
 app.get('/api/items', async function(req, res){
@@ -219,7 +226,7 @@ app.get('/api/items/:id', async function (req, res) {
     try {
         console.log("hi");
         const id = req.params.id;
-        console.log(id);
+        // console.log(id);
         const item = await Item.findOne({ id }).populate({
             path: 'sellerId',
             select: 'first_name last_name', 
@@ -284,7 +291,7 @@ app.put('/api/sell', async function(req, res){
             },
         });
 
-        console.log(result.secure_url);
+        // console.log(result.secure_url);
 
         await new_item.save();
 
@@ -306,13 +313,13 @@ app.post("/api/cart", async function (req, res){
         const item_id = req.body.item_id;
         const item = await Item.findOne({id : item_id});
 
-        console.log(item._id);
+        // console.log(item._id);
         // const item_mongo_id = await Item.findOne({id : item_id})._id;
         // console.log(item_mongo_id);
 
 
         const user = await User.findById(user_id).populate('cart_items');
-        console.log(user);
+        // console.log(user);
         // console.log(user.cart_items);
         // console.log(user.cart_items.length);
 
@@ -346,10 +353,13 @@ app.get('/api/cart', async function(req, res){
         const user = await User.findById(req.user._id).populate('cart_items');
         // console.log(user.cart_items);
 
-        const cart_items = (user.cart_items.filter((item) => {item.status === "available"}))
+        const cart_items = user.cart_items.filter((item) => item.status === "available");
 
+        // console.log("hi");
+        // console.log(cart_items);
+        
         res.status(200).json({ 
-            cart_items: user.cart_items 
+            cart_items
         });
     } 
     catch(err){
@@ -478,23 +488,36 @@ app.get('/api/history', async function (req, res){
             name: order.itemId.name,
             price: order.itemId.price,
             category: order.itemId.category,
-            vendor: `${order.sellerId.first_name} ${order.sellerId.last_name}`
+            vendor: `${order.sellerId.first_name} ${order.sellerId.last_name}`,
+            image: order.itemId.image,
+            sellerId: order.sellerId._id
         }));
  
-        const items_bought = user.orders_placed.filter(order => order.status === 'completed').map(order => ({
-            name: order.itemId.name,
-            price: order.itemId.price,
-            category: order.itemId.category,
-            vendor: `${order.sellerId.first_name} ${order.sellerId.last_name}`
-        }));
+        const items_bought = user.orders_placed.filter(order => order.status === 'completed').map(order => {
+            console.log(order.itemId._id);
+            console.log("hi")
+            return {
+                name: order.itemId.name,
+                price: order.itemId.price,
+                category: order.itemId.category,
+                vendor: `${order.sellerId.first_name} ${order.sellerId.last_name}`,
+                image: order.itemId.image,
+                sellerId: order.sellerId._id,
+                itemId: order.itemId._id
+            };
+        });
 
         const items_sold = user.orders_received.filter(order => order.status === 'completed').map(order => ({
             name: order.itemId.name,
             price: order.itemId.price,
             category: order.itemId.category,
-            buyer: `${order.buyerId.first_name} ${order.buyerId.last_name}`
+            buyer: `${order.buyerId.first_name} ${order.buyerId.last_name}`,
+            image: order.itemId.image,
+            sellerId: order.sellerId._id
         }));
 
+        // console.log(pending_orders);
+        
         res.status(200).json({
             pending_orders,
             items_bought,
@@ -591,7 +614,7 @@ app.get('/api/orders/pending', async function (req, res) {
     try {
         
         const pending_orders = await Order.find({ sellerId, status: 'pending' }).populate('buyerId', 'first_name last_name')
-        .populate('itemId', 'name price status'); 
+        .populate('itemId', 'name price status image'); 
 
         // console.log(pending_orders);
         const to_be_sent = pending_orders.filter((order) => {return order.itemId.status === 'available'}) //for pt 2 in README
@@ -601,10 +624,11 @@ app.get('/api/orders/pending', async function (req, res) {
                 name: order.itemId.name,
                 price: order.itemId.price,
                 buyer: `${order.buyerId.first_name} ${order.buyerId.last_name}`,
+                image: order.itemId.image
             };
         });
 
-        console.log(to_be_sent);
+        // console.log(to_be_sent);
 
         res.status(200).json({
             to_be_sent,
@@ -685,7 +709,7 @@ CampusMart Website Features:
    - CAS (Central Authentication Service) login
    - Signup for new users
 
-2. Search Items tab:
+2. Shop tab:
    - Buy and sell items within IIITH community
    - Categories: clothing, grocery, academics, sports, others
    - Item listing with details are selled, price, description and category
@@ -710,76 +734,82 @@ CampusMart Website Features:
 
 5. Sell an Item:
    - Go to 'Sell and Item' tab
-   - enter the required details
+   - enter the required details i.e. name, price, category, image, description
    - click on sell button
 
 Interaction Guidelines:
 - Provide helpful, friendly responses
 - Guide users through website features
-- Maintain context of conversation
+- Store the context of conversation and give responses as per the conversation
 - Prioritize user experience
-- only answer questions related to CampusMart and its website
 `;
 
 app.post('/api/chat', async (req, res) => {
     const { message, sessionId } = req.body;
 
     try {
-
-        if(!conversationSessions.has(sessionId)){
+        // Initialize session if it doesn't exist
+        if (!conversationSessions.has(sessionId)) {
             const initialSession = [
                 {
                     role: 'system',
                     content: WEBSITE_CONTEXT
-                },
-                {
-                    role: 'assistant',
-                    content: "Welcome to CampusMart! How can I help you today? I'm here to assist you with any questions about our marketplace, buying and selling items, or navigating our platform."
                 }
             ];
             conversationSessions.set(sessionId, initialSession);
+        }
 
-            if(!message){
-                return res.json({ 
-                    response: "Welcome to CampusMart! How can I help you today?" 
+        const session = conversationSessions.get(sessionId);
+
+        // If this is the first message, add welcome message
+        if (session.length === 1) {
+            if (!message) {
+                return res.json({
+                    response: "Welcome to CampusMart! How can I help you today?"
                 });
             }
         }
 
-        const session = conversationSessions.get(sessionId);
-        
+        // Add user message to history
         session.push({
-            role: 'user',
+            role: 'user', // Changed from 'system' to 'user'
             content: message
         });
 
-        const chatHistory = session.map(msg => 
-            `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-        ).join('\n');
+        // Format chat history correctly
+        const chatHistory = session.map(msg => {
+            // Properly format based on role
+            const role = msg.role === 'system' ? 'System' :
+                        msg.role === 'user' ? 'Human' : 'Assistant';
+            return `${role}: ${msg.content}`;
+        }).join('\n');
 
+        // Generate response
         const result = await model.generateContent(chatHistory);
         const aiResponse = result.response.text().replace(/^Assistant:\s*/, '');
-        // console.log(aiResponse);
 
+        // Add AI response to history
         session.push({
-            role: 'assistant', 
+            role: 'assistant',
             content: aiResponse
         });
 
-        if(session.length > 10){
-            session.splice(1, 2);
+        // Optional: Maintain a reasonable history size (last N messages)
+        const MAX_HISTORY = 20;
+        if (session.length > MAX_HISTORY) {
+            // Keep system message and last (MAX_HISTORY-1) messages
+            session.splice(1, session.length - MAX_HISTORY);
         }
 
         res.json({ response: aiResponse });
-    } 
-    
-    catch(err){
-        console.log(err);
-        res.status(401).json({ 
-            error: 'Failed to generate response' 
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ // Changed from 401 to 500 for server errors
+            error: 'Failed to generate response'
         });
     }
 });
+
 
 app.get('/api/chat/new-session', function (req, res) {
     const sessionId = Date.now().toString();
@@ -788,7 +818,86 @@ app.get('/api/chat/new-session', function (req, res) {
     });
 });
 
+app.post('/api/review', async function (req, res) {
+    console.log("hi");
+    try {
+        const { sellerId, text , itemId} = req.body;
+        const reviewerId = req.user._id; 
 
+        // console.log(sellerId);
+        // console.log("...............");
+        // console.log(text)
+        // console.log(itemId)
+
+        if (!sellerId || !text) {
+            console.log("err1");
+            return res.status(401).json({ msg: 
+                'Seller ID and review text are required' 
+            });
+        }
+
+        const seller = await User.findById(sellerId);
+        const item = await Item.findById(itemId);
+
+        if(!seller){
+            console.log("err");
+            return res.status(401).json({ 
+                msg: 'Seller not found' 
+            });
+        }
+
+        if(!item){
+            console.log("err2");
+            return res.status(401).json({ 
+                msg: 'item not found' 
+            });
+        }
+
+        seller.seller_reviews.push({ reviewerId, itemId,  text });
+        await seller.save();
+
+        res.status(200).json({ 
+            msg: 'Review submitted successfully', 
+        });
+    } 
+    
+    catch(err){
+        console.log(err);
+        res.status(401).json({
+            msg: 'Server error' 
+        });
+    }
+});
+
+app.get('/api/profile/reviews', async function (req, res) {
+    try {
+        const user = await User.findById(req.user._id)
+            .select('seller_reviews')
+            .populate({
+                path: 'seller_reviews.reviewerId',
+                select: 'first_name last_name'
+            })
+            .populate({
+                path: 'seller_reviews.itemId',
+                select: 'name'
+            });
+
+        if(!user){
+            return res.status(401).json({
+                msg: 'User not found' 
+            });
+        }
+        
+        const reviews = user.seller_reviews
+        res.status(200).json({
+            reviews
+        });
+    } 
+    catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

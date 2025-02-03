@@ -56,58 +56,75 @@ export default function DeliverItemsComponent(){
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-            <h1 className="text-3xl font-bold mb-6 text-center">Pending Orders</h1>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold mt-11 mb-12 text-center text-gray-800">Orders Received</h1>
 
             {orders.length === 0 ? (
-                <div className="text-center mt-10">
-                    <p className="text-gray-500 text-lg">No pending orders</p>
+                <div className="flex items-center justify-center h-64">
+                    <p className="text-xl text-gray-500 font-medium">No orders received yet!</p>
                 </div>
             ) : (
-
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'> 
-
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {orders.map((order) => (
-                        <div key={order.id} className="bg-white shadow-md rounded-lg p-4 my-4">
+                        <div key={order.id} className="bg-white shadow-lg rounded-2xl p-6 flex flex-col sm:flex-row gap-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
+                            <div className="w-full sm:w-48 h-48 flex-shrink-0">
+                                <img 
+                                    src={order.image.url} 
+                                    alt={order.name} 
+                                    className="w-full h-full object-cover rounded-xl shadow-md"
+                                />
+                            </div>
 
-                            <h3 className="text-xl font-semibold">Item: {order.name}</h3>
-                            <p className="text-gray-700">Price: Rs {order.price}</p>
-                            <p className="text-gray-700">Buyer Name: {order.buyer}</p>
-                            
-                            {selected_order === order.id ? (
+                            <div className="flex-1 space-y-4">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{order.name}</h3>
+                                    <p className="text-lg">
+                                        <span className="font-medium text-gray-700">Price:</span>
+                                        <span className="text-green-600 font-semibold ml-2">Rs {order.price}</span>
+                                    </p>
+                                    <p className="text-lg">
+                                        <span className="font-medium text-gray-700">Buyer:</span>
+                                        <span className="text-gray-600 ml-2">{order.buyer}</span>
+                                    </p>
+                                </div>
+                                
+                                {selected_order === order.id ? (
+                                    <div className="space-y-4 pt-4">
+                                        <input 
+                                            type="text"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            placeholder="Enter OTP"
+                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        />
 
-                                <div className="mt-4">
-                                    <input type="text"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        placeholder="Enter OTP"
-                                        className="border border-gray-300 rounded px-4 py-2"
-                                    />
+                                        <div className="flex gap-3">
+                                            <button 
+                                                onClick={() => comp_transac(order.id)}
+                                                className="flex-1 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-150"
+                                            >
+                                                Complete Transaction
+                                            </button>
 
-                            
-                                    <button onClick={() => comp_transac(order.id)}
-                                        className="ml-4 bg-blue-600 text-white px-4 py-2 rounded"
+                                            <button 
+                                                onClick={() => setSelectedOrder(null)}
+                                                className="px-5 py-2.5 text-gray-700 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors duration-150"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => setSelectedOrder(order.id)} 
+                                        className="w-full sm:w-auto mt-4 bg-blue-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-150"
                                     >
                                         Complete Transaction
                                     </button>
-
-                                    <button onClick={() => setSelectedOrder(null)}
-                                        className="ml-2 text-red-600 underline"
-                                    >
-                                        Cancel
-                                    </button>
-
-                                </div>
-
-                            ) : (
-
-                                <button onClick={() => setSelectedOrder(order.id)} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-                                    Complete Transaction
-                                </button>
-                            )}
+                                )}
+                            </div>
                         </div>
                     ))}
-
                 </div>
             )}
         </div>
