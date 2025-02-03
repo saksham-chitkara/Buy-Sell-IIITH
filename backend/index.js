@@ -741,6 +741,7 @@ Interaction Guidelines:
 - Provide helpful, friendly responses
 - Guide users through website features
 - Store the context of conversation and give responses as per the conversation
+- answer as per the context of the conversation (it is must)
 - Prioritize user experience
 `;
 

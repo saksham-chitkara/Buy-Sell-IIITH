@@ -91,11 +91,11 @@ export default function LoginComponent() {
         const token = urlParams.get('token');
         if(token){
             localStorage.setItem('token', token);
-            navigate('/sea');
+            navigate('/search');
         }
     }, [navigate]);
     
-
+    
     if(loading){
         return (
             <div> Loading... </div>
