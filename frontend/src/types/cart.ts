@@ -4,7 +4,7 @@ export interface CartItem {
   price: number;
   bargainedPrice: number | null;
   quantity: number;
-  image: string;
+  images: { url: string; public_id: string }[];
   seller: {
     id: string;
     name: string;

@@ -35,7 +35,7 @@ interface Item {
     rating?: number;
   };
   categories: string[];
-  images: string[];
+  images: { url: string; public_id: string }[];
   createdAt?: string;
 }
 
@@ -300,7 +300,7 @@ function ItemCard({ item }: { item: Item }) {
           <CardItem translateZ="100" className="w-full mt-4">
             {item.images[0] && (
               <Image
-                src={item.images[0]}
+                src={item.images[0].url ? item.images[0].url : "/file.svg"}
                 alt={item.name}
                 height={300}
                 width={400}

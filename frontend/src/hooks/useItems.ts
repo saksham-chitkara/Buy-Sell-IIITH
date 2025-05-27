@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import api from '@/lib/api';
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
 
 export const useItems = () => {
   const [items, setItems] = useState<any[]>([]);
@@ -13,22 +13,23 @@ export const useItems = () => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/items', { signal });
+        const response = await api.get("/items", { signal });
         setItems(response.data);
         setError(null);
       } catch (err: any) {
-        if (err.name === 'AbortError') {
-          console.log('Request was aborted');
+        if (err.name === "AbortError") {
+          console.log("Request was aborted");
           return;
         }
-        
-        console.error('Error fetching items:', err);
+
+        console.error("Error fetching items:", err);
         if (!err.response) {
-          setError('Failed to connect to server. Please check your internet connection and try again.');
+          setError(
+            "Failed to connect to server. Please check your internet connection and try again."
+          );
         } else {
-          setError('Failed to load items. Please try again later.');
+          setError("Failed to load items. Please try again later.");
         }
-        // Set empty array to prevent undefined errors
         setItems([]);
       } finally {
         setLoading(false);
@@ -37,7 +38,6 @@ export const useItems = () => {
 
     fetchItems();
 
-    // Cleanup function to abort fetch on unmount
     return () => {
       controller.abort();
     };
@@ -46,15 +46,23 @@ export const useItems = () => {
   const createItem = async (data: FormData) => {
     try {
       setLoading(true);
-      const response = await api.post('/items', data, {
+      console.log("Sending request with token:", localStorage.getItem("token")); // Debug token
+      const response = await api.post("/items", data, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      console.log("Create item response:", response.data); // Debug response
+      setError(null);
       return response.data;
     } catch (err: any) {
-      console.error('Error creating item:', err);
-      throw err;
+      console.error("Error creating item:", err.response?.data || err); // Debug error
+      setError(
+        err.response?.data?.message ||
+          "Failed to create item. Please try again later."
+      );
+      return null;
     } finally {
       setLoading(false);
     }
@@ -65,7 +73,7 @@ export const useItems = () => {
       await api.delete(`/items/${itemId}`);
       return true;
     } catch (err) {
-      console.error('Error deleting item:', err);
+      console.error("Error deleting item:", err);
       return false;
     }
   };

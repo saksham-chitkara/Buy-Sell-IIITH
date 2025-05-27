@@ -51,7 +51,7 @@ interface ItemDetails {
     overallRating: number;
   };
   categories: string[];
-  images: string[];
+  images: { url: string; public_id: string }[];
   specifications: {
     [key: string]: string;
   };
@@ -83,6 +83,11 @@ export default function ItemPage({
   useEffect(() => {
     const fetchItem = async () => {
       setIsLoading(true);
+      if (!resolvedParams?.id) {
+        setItem(null);
+        setIsLoading(false);
+        return;
+      }
       const itemData = await getItem(resolvedParams.id);
       if (itemData) {
         setItem(itemData);
@@ -94,7 +99,7 @@ export default function ItemPage({
     };
 
     fetchItem();
-  }, [resolvedParams.id]);
+  }, [resolvedParams?.id]);
 
   const addToCart = async () => {
     if (!item) return;
@@ -157,10 +162,9 @@ export default function ItemPage({
                 key={currentImageIndex}
                 initial={{ opacity: 0 }}
                 onClick={() => {
+                  const imgArr = Array.isArray(item.images) ? item.images : [];
                   window.open(
-                    process.env.NEXT_PUBLIC_UPLOADS_URL +
-                      "/items/" +
-                      item.images[currentImageIndex],
+                    imgArr[currentImageIndex]?.url || "/file.svg",
                     "_blank"
                   );
                 }}
@@ -172,9 +176,9 @@ export default function ItemPage({
                 <Lens hovering={imageHovering} setHovering={setImageHovering}>
                   <Image
                     src={
-                      process.env.NEXT_PUBLIC_UPLOADS_URL +
-                      "/items/" +
-                      item.images[currentImageIndex]
+                      Array.isArray(item.images) && item.images[currentImageIndex]?.url
+                        ? item.images[currentImageIndex].url
+                        : "/file.svg"
                     }
                     alt={item.name}
                     fill
@@ -187,7 +191,7 @@ export default function ItemPage({
           </div>
 
           {/* Navigation Controls */}
-          {item.images.length > 1 && (
+          {Array.isArray(item.images) && item.images.length > 1 && (
             <div className="flex items-center justify-center gap-6">
               <button
                 onClick={() =>
@@ -229,28 +233,36 @@ export default function ItemPage({
 
           {/* Thumbnail Preview */}
           <div className="flex gap-2 overflow-x-auto pb-5 scrollbar-thin scrollbar-thumb-gray-100 dark:scrollbar-thumb-gray-700 p-2">
-            {item.images.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 ${
-                  currentImageIndex === index
-                    ? "ring-2 ring-black dark:ring-white"
-                    : "ring-1 ring-gray-200 dark:ring-gray-800"
-                }`}
-              >
-                <Image
-                  src={
-                    process.env.NEXT_PUBLIC_UPLOADS_URL +
-                    "/items/" +
-                    item.images[index]
-                  }
-                  alt={`${item.name} preview ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
+            {Array.isArray(item.images) && item.images.length > 0 ? (
+              item.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 ${
+                    currentImageIndex === index
+                      ? "ring-2 ring-black dark:ring-white"
+                      : "ring-1 ring-gray-200 dark:ring-gray-800"
+                  }`}
+                >
+                  <Image
+                    src={
+                      image?.url ? image.url : "/file.svg"
+                    }
+                    alt={`${item.name} preview ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))
+            ) : (
+              <Image
+                src="/file.svg"
+                alt="No image available"
+                width={80}
+                height={80}
+                className="object-cover rounded-lg"
+              />
+            )}
           </div>
         </div>
 

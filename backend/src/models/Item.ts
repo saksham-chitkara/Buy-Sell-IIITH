@@ -5,7 +5,10 @@ interface IItem extends Document {
   description: string;
   price: number;
   quantity: number;
-  images: string[]; // These will now be Cloudinary URLs
+  images: Array<{
+    public_id: string;
+    url: string;
+  }>;
   categories: string[];
   seller: mongoose.Schema.Types.ObjectId;
   isAvailable: boolean;
@@ -33,12 +36,16 @@ const itemSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    images: [
-      {
+    images: [{
+      public_id: {
         type: String,
         required: true,
       },
-    ],
+      url: {
+        type: String,
+        required: true,
+      }
+    }],
     categories: [
       {
         type: String,

@@ -28,6 +28,7 @@ export const useItem = () => {
   };
 
   const checkItemInCart = async (itemId: string) => {
+    if (!itemId) return false;
     try {
       const { data } = await api.get(`/cart/check/${itemId}`);
       return data.inCart;

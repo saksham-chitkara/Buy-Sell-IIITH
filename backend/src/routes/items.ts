@@ -12,6 +12,7 @@ import { handleImageUpload } from "../middleware/image";
 
 const router = express.Router();
 
+// CREATE
 router.post(
   "/",
   auth,
@@ -20,11 +21,13 @@ router.post(
   createItem
 );
 
-// Add the missing getAllItems route
+// READ ALL
 router.get("/", getAllItems);
 
+// READ ONE
 router.get("/:id", getItem);
 
+// UPDATE (replace with new image if provided)
 router.patch(
   "/:id",
   auth,
@@ -33,6 +36,7 @@ router.patch(
   updateItem
 );
 
+// DELETE
 router.delete("/:id", auth, deleteItem);
 
 export default router;

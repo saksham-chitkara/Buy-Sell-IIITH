@@ -33,7 +33,7 @@ export const CartItemCard = ({ item, onRemove, onBargain }: CartItemCardProps) =
           {/* Item Image */}
           <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
             <CloudinaryImage
-              publicId={item.image}
+              publicId={item.images && item.images[0] && item.images[0].url ? item.images[0].url : ""}
               alt={item.name}
               width={96}
               height={96}

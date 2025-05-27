@@ -141,7 +141,7 @@ export default function SignupPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  pattern="[a-zA-Z0-9._%+-]+@[^\s@]+\.iiit\.ac\.in$"
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.iiit\\.ac\\.in"
                 />
               </div>
 

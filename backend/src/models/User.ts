@@ -9,8 +9,10 @@ interface IUser extends Document {
   age: number;
   contactNumber: string;
   password: string;
-  avatar: string;
-  avatarPublicId: string;
+  avatar: {
+    public_id: string;
+    url: string;
+  };
   overallRating: number;
   ratingCount: number;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -52,12 +54,14 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     avatar: {
-      type: String,
-      default: "https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default.jpg",
-    },
-    avatarPublicId: {
-      type: String,
-      default: "users/default-avatar",
+      public_id: {
+        type: String,
+        default: "users/default-avatar",
+      },
+      url: {
+        type: String,
+        default: "https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default.jpg",
+      }
     },
     overallRating: {
       type: Number,

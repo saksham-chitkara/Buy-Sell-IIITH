@@ -64,7 +64,8 @@ export function ReCAPTCHA({ onVerify }: ReCAPTCHAProps) {
     const existingScript = document.querySelector('script[src*="recaptcha/api.js"]');
     if (!existingScript) {
       const script = document.createElement("script");
-      script.src = "https://www.google.com/recaptcha/api/siteverify?render=explicit";
+      // FIX: Use the correct reCAPTCHA client script, not the siteverify endpoint
+      script.src = "https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit";
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);

@@ -35,7 +35,7 @@ interface Item {
   description: string;
   price: number;
   quantity: number;
-  images: string[];
+  images: { url: string; public_id: string }[];
   categories: string[];
   seller: string;
   isAvailable: boolean;
@@ -251,9 +251,9 @@ const OrderCard = ({
         <div className="relative h-48 w-full">
           <Image
             src={
-              process.env.NEXT_PUBLIC_UPLOADS_URL +
-              "/items/" +
-              order.item.images[0]
+              Array.isArray(order.item.images) && order.item.images.length > 0 && order.item.images[0]?.url
+                ? order.item.images[0].url
+                : "/file.svg"
             }
             alt={order.item.name}
             fill
@@ -289,15 +289,18 @@ const OrderCard = ({
               <div>
                 <p className="text-sm text-gray-500">Price</p>
                 <div className="flex items-center gap-2">
-                  {order.bargainedPrice &&
-                    order.bargainedPrice !== order.price ? (
-                      <span className="text-sm text-gray-500 line-through">
-                        ₹{order.price.toLocaleString()}
-                      </span>
-                    ) : null}
-                  {false && false}
+                  {/* Debug: print price, bargainedPrice, and their types in the UI */}
+                  <div style={{ fontSize: '10px', color: 'red' }}>
+                    <div>order.price: {String(order.price)} (type: {typeof order.price})</div>
+                    <div>order.bargainedPrice: {String(order.bargainedPrice)} (type: {typeof order.bargainedPrice})</div>
+                  </div>
+                  {order.bargainedPrice && order.bargainedPrice !== order.price ? (
+                    <span className="text-sm text-gray-500 line-through">
+                      ₹{String(order.price)}
+                    </span>
+                  ) : null}
                   <span className="text-lg font-bold">
-                    ₹{(order.bargainedPrice ?? order.price).toLocaleString()}
+                    ₹{String(order.bargainedPrice ?? order.price)}
                   </span>
                 </div>
               </div>
@@ -307,7 +310,7 @@ const OrderCard = ({
               </div>
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 ">
                 {type === "sold" ? "Buyer" : "Seller"}
               </p>
               <p className="font-medium">

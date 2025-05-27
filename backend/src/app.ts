@@ -18,6 +18,7 @@ import sellerRoutes from "./routes/seller";
 
 // Import middleware
 import { handleImageUpload as imageMiddleware } from "./middleware/image";
+import { upload } from "./middleware/upload";
 
 // Load environment variables
 dotenv.config();
@@ -65,10 +66,44 @@ app.use(
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Error handling middleware
+// Configure routes
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/items", itemRoutes); // Multer is configured in the route file
+app.use("/cart", cartRoutes);
+app.use("/chat", chatRoutes);
+app.use("/orders", orderRoutes);
+app.use("/seller", sellerRoutes);
+// app.use("/ai", aiRoutes); // Comment out until created
+
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
+// Error handling middleware (should be last)
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof multer.MulterError) {
-    // A Multer error occurred when uploading
+    // Handle different types of Multer errors
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        status: "error",
+        message: "File is too large. Maximum size is 5MB"
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        status: "error",
+        message: "Too many files. Maximum is 5 files"
+      });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        status: "error",
+        message: "Wrong field name. Please use 'images' for uploading files"
+      });
+    }
+    // Generic multer error
     return res.status(400).json({
       status: "error",
       message: `Upload error: ${err.message}`,
@@ -80,21 +115,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     status: "error",
     message: err.message || "Internal Server Error",
   });
-});
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/items", itemRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/seller", sellerRoutes);
-// app.use("/api/ai", aiRoutes); // Comment out until fixed
-
-// Health check route
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
 // Start server

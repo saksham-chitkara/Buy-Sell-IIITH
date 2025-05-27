@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -23,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, X, Loader2 } from "lucide-react";
+import { X, Loader2, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useItems } from "@/hooks/useItems";
 
@@ -54,8 +53,8 @@ export default function CreateListing() {
     quantity: "1",
     categories: [] as string[],
   });
-  const [images, setImages] = useState<File[]>([]);
-  const [imagesPreviews, setImagesPreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { createItem } = useItems();
@@ -73,27 +72,23 @@ export default function CreateListing() {
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      if (acceptedFiles.length + images.length > 5) {
-        toast({
-          title: "Too many images",
-          description: "You can upload a maximum of 5 images.",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Only allow up to 5 images
+      const remainingSlots = 5 - imageFiles.length;
+      const newFiles = acceptedFiles.slice(0, remainingSlots);
+      if (newFiles.length === 0) return;
 
-      setImages((prev) => [...prev, ...acceptedFiles]);
-
-      // Create previews
-      acceptedFiles.forEach((file) => {
+      // Create previews for new files
+      newFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setImagesPreviews((prev) => [...prev, reader.result as string]);
+          setImagePreviews((prev) => [...prev, reader.result as string]);
         };
         reader.readAsDataURL(file);
       });
+
+      setImageFiles((prev) => [...prev, ...newFiles]);
     },
-    [images.length, toast]
+    [imageFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -101,17 +96,19 @@ export default function CreateListing() {
     accept: {
       "image/*": [".png", ".jpg", ".jpeg", ".webp"],
     },
-    maxFiles: 5 - images.length,
+    maxFiles: 5,
+    maxSize: 5 * 1024 * 1024, // 5MB
   });
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (images.length === 0) {
+
+    if (imageFiles.length === 0) {
       toast({
         title: "No images",
         description: "Please upload at least one image.",
@@ -123,7 +120,7 @@ export default function CreateListing() {
     if (formData.name.length > 50 || formData.description.length > 500) {
       toast({
         title: "Character limit exceeded",
-        description: "I ain't hosting no stories here. 🤨",
+        description: "Name ≤ 50 chars and description ≤ 500 chars.",
         variant: "destructive",
       });
       return;
@@ -155,27 +152,36 @@ export default function CreateListing() {
     newFormData.append("price", formData.price);
     newFormData.append("quantity", formData.quantity);
     newFormData.append("categories", formData.categories.join(","));
-
-    // Append each image
-    images.forEach((image) => {
-      newFormData.append("itemImages", image);
+    
+    // Append multiple images with the same field name
+    imageFiles.forEach((file) => {
+      newFormData.append("images", file);
     });
 
-    const result = await createItem(newFormData);
-    if (result) {
-      toast({
-        title: "Listing created",
-        description: "Your item has been listed successfully.",
-      });
-      router.push("/seller/dashboard");
-    } else {
+    try {
+      const result = await createItem(newFormData);
+      if (result) {
+        toast({
+          title: "Listing created",
+          description: "Your item has been listed successfully.",
+        });
+        router.push("/seller/dashboard");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to create listing. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to create listing. Please try again.",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -189,6 +195,7 @@ export default function CreateListing() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Item Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">
                 Item Name
@@ -202,6 +209,7 @@ export default function CreateListing() {
               />
             </div>
 
+            {/* Description */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">
                 Description
@@ -215,6 +223,7 @@ export default function CreateListing() {
               />
             </div>
 
+            {/* Price and Quantity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">
@@ -247,6 +256,7 @@ export default function CreateListing() {
               </div>
             </div>
 
+            {/* Categories */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">
                 Categories
@@ -301,10 +311,11 @@ export default function CreateListing() {
               </div>
             </div>
 
+            {/* Image Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Images</label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {imagesPreviews.map((preview, index) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {imagePreviews.map((preview, index) => (
                   <div
                     key={index}
                     className="relative aspect-square rounded-lg overflow-hidden border border-white/10"
@@ -324,29 +335,30 @@ export default function CreateListing() {
                     </button>
                   </div>
                 ))}
-                {images.length < 5 && (
+                {imagePreviews.length < 5 && (
                   <div
                     {...getRootProps()}
                     className={`aspect-square rounded-lg border-2 border-dashed transition-colors flex flex-col items-center justify-center gap-2 text-white cursor-pointer
-              ${
-                isDragActive
-                  ? "border-white/50 bg-white/10"
-                  : "border-white/10 hover:border-white/20"
-              }`}
+                      ${
+                        isDragActive
+                          ? "border-white/50 bg-white/10"
+                          : "border-white/10 hover:border-white/20"
+                      }`}
                   >
                     <input {...getInputProps()} />
                     <Upload className="w-6 h-6" />
                     <span className="text-sm text-center">
-                      {isDragActive ? "Drop images here" : "Add images"}
+                      {isDragActive ? "Drop images here" : "Add more images"}
                     </span>
                   </div>
                 )}
               </div>
               <p className="text-xs text-gray-400">
-                Upload up to 5 images (PNG, JPG, WEBP)
+                Upload up to 5 images (PNG, JPG, WEBP), max 5 MB each
               </p>
             </div>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               className="w-full bg-white text-black hover:bg-white/90"

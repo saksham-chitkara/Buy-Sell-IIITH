@@ -78,7 +78,7 @@ interface Listing {
   _id: string;
   name: string;
   price: number;
-  images: string[];
+  images: { url: string; public_id: string }[];
   quantity: number;
   isAvailable: boolean;
   createdAt: string;
@@ -395,9 +395,9 @@ export default function SellerDashboard() {
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden">
                             <Image
                               src={
-                                process.env.NEXT_PUBLIC_UPLOADS_URL +
-                                "/items/" +
-                                request.itemImage
+                                request.itemImage && request.itemImage.startsWith('http')
+                                  ? request.itemImage
+                                  : "/file.svg"
                               }
                               alt={request.itemName}
                               fill
@@ -604,9 +604,9 @@ const ListingsGrid = ({ listings }: { listings: Listing[] }) => {
           <div className="relative aspect-square">
             <Image
               src={
-                process.env.NEXT_PUBLIC_UPLOADS_URL +
-                "/items/" +
-                listing.images[0]
+                listing.images && listing.images.length > 0 && listing.images[0].url
+                  ? listing.images[0].url
+                  : "/file.svg"
               }
               alt={listing && listing.name}
               fill
@@ -692,9 +692,9 @@ const OrdersTable = ({
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden">
                       <Image
                         src={
-                          process.env.NEXT_PUBLIC_UPLOADS_URL +
-                          "/items/" +
-                          order.itemImage
+                          order.itemImage && order.itemImage.startsWith('http')
+                            ? order.itemImage
+                            : "/file.svg"
                         }
                         alt={order.itemName}
                         fill

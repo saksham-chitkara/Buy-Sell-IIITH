@@ -76,7 +76,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.iiit\.ac\.in"
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.iiit\\.ac\\.in"
                   className="w-full"
                 />
               </div>

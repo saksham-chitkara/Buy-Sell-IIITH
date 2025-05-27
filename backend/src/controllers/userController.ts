@@ -60,17 +60,15 @@ export const updateProfile = async (
 
     // Handle avatar upload
     if (req.file) {
-      const imageUrl = await uploadToCloudinary(req.file, "users");
-      updates.avatar = imageUrl;
-      
-      // Extract public ID from the Cloudinary URL
-      // Format: https://res.cloudinary.com/cloud-name/image/upload/v1234567890/folder/filename.ext
-      const match = imageUrl.match(/\/v\d+\/(.+?)\./);
-      updates.avatarPublicId = match && match[1] ? match[1] : `users/${Date.now()}`;
+      const image = await uploadToCloudinary(req.file, "users");
+      updates.avatar = {
+        public_id: image.public_id,
+        url: image.url
+      };
 
       // Delete old avatar from Cloudinary if it exists
-      if (user?.avatarPublicId && user.avatarPublicId !== "users/default-avatar") {
-        await deleteFromCloudinary(user.avatarPublicId);
+      if (user?.avatar?.public_id && user.avatar.public_id !== "users/default-avatar") {
+        await deleteFromCloudinary(user.avatar.public_id);
       }
     }
 
@@ -214,18 +212,16 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response) => {
 
     if (req.file) {
       // Upload new avatar to Cloudinary
-      const imageUrl = await uploadToCloudinary(req.file, "users");
-      updates.avatar = imageUrl;
-      
-      // Extract public ID from the Cloudinary URL
-      // Format: https://res.cloudinary.com/cloud-name/image/upload/v1234567890/folder/filename.ext
-      const match = imageUrl.match(/\/v\d+\/(.+?)\./);
-      updates.avatarPublicId = match && match[1] ? match[1] : `users/${Date.now()}`;
+      const image = await uploadToCloudinary(req.file, "users");
+      updates.avatar = {
+        public_id: image.public_id,
+        url: image.url
+      };
 
       // Delete old avatar from Cloudinary if it exists
       const user = await User.findById(req.user._id);
-      if (user?.avatarPublicId && user.avatarPublicId !== "users/default-avatar") {
-        await deleteFromCloudinary(user.avatarPublicId);
+      if (user?.avatar?.public_id && user.avatar.public_id !== "users/default-avatar") {
+        await deleteFromCloudinary(user.avatar.public_id);
       }
     }
 

@@ -4,7 +4,9 @@ import jwt from "jsonwebtoken";
 interface AuthRequest extends Request {
   user?: {
     id: string;
+    _id?: string;
     email: string;
+    [key: string]: any;
   };
 }
 
@@ -26,7 +28,7 @@ export const auth = async (
       email: string;
     };
 
-    req.user = decoded;
+    req.user = { id: decoded.id, _id: decoded.id, email: decoded.email };
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
