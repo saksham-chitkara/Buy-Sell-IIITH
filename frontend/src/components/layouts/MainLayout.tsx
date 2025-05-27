@@ -27,6 +27,7 @@ import ProtectedRoute from "../ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { ChatButton } from "../ChatButton";
+import { CloudinaryImage, DEFAULT_AVATAR_URL, DEFAULT_ITEM_URL } from "@/utils/image-helpers";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -73,11 +74,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     router.push(isSellerMode ? "/explore" : "/seller/dashboard");
   };
 
-  const getAvatarUrl = (avatar: string | undefined) => {
-    if (!avatar) return undefined;
-    return avatar.startsWith("http")
-      ? avatar
-      : `/api/users/avatar/${avatar}`;
+  const getAvatarUrl = (avatar: string | CloudinaryImage | undefined) => {
+    if (!avatar) return DEFAULT_AVATAR_URL;
+    if (typeof avatar === "object" && "url" in avatar) {
+      return avatar.url;
+    }
+    return avatar.startsWith("http") ? avatar : DEFAULT_AVATAR_URL;
   };
 
   return (

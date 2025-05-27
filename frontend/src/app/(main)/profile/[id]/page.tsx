@@ -39,7 +39,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { useProfile } from "@/hooks/useProfile";
-import { getAvatarUrl, handleImageError } from "@/utils/image-helpers";
+import { getAvatarUrl, DEFAULT_AVATAR_URL, handleImageError } from "@/utils/image-helpers";
 import { useRouter } from "next/navigation";
 
 interface UserProfile {
@@ -105,6 +105,7 @@ export default function ProfilePage({
     isLoading,
   } = useProfile();
 
+  // Effect for fetching profile data
   useEffect(() => {
     const fetchProfile = async () => {
       const data = await getProfile(userId);
@@ -229,7 +230,7 @@ export default function ProfilePage({
       return;
     }
 
-    // Validate file size (e.g., 5MB limit)
+    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -246,7 +247,6 @@ export default function ProfilePage({
 
       const result = await updateProfile(formData);
       if (result) {
-        // Update the profile state with the new avatar URL
         setProfile((prev) =>
           prev
             ? {
@@ -255,20 +255,24 @@ export default function ProfilePage({
               }
             : null
         );
+
+        toast({
+          title: "Success",
+          description: "Profile picture updated successfully.",
+        });
       }
     } catch (error) {
       toast({
         title: "Upload failed",
         description:
-          "Failed to update profile picture. Please try again. (" + error + ")",
+          "Failed to update profile picture. Please try again. " +
+          (error instanceof Error ? error.message : String(error)),
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
     }
   };
-
-  // Using the utility function from image-helpers.ts instead of local implementation
 
   if (isLoading) {
     return <ProfileSkeleton />;
@@ -277,6 +281,9 @@ export default function ProfilePage({
   if (!profile) {
     return <div>Profile not found</div>;
   }
+
+  // Use Cloudinary URL with fallback
+  const avatarUrl = getAvatarUrl(profile.avatar) || DEFAULT_AVATAR_URL;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -287,34 +294,35 @@ export default function ProfilePage({
               <div className="text-center">
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <Image
-                    src={getAvatarUrl(profile.avatar)}
+                    src={avatarUrl}
                     alt={`${profile.firstName}'s avatar`}
                     fill
                     className="rounded-full object-cover"
-                    onError={handleImageError}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = DEFAULT_AVATAR_URL;
+                    }}
+                    priority
                   />
                   {isOwnProfile && (
-                    <div className="absolute bottom-0 right-0">
-                      <Button
-                        size="icon"
-                        className="rounded-full"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Camera className="h-4 w-4" />
-                        )}
-                      </Button>
+                    <label
+                      htmlFor="avatar-upload"
+                      className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white rounded-full p-2 cursor-pointer"
+                    >
                       <input
+                        id="avatar-upload"
                         type="file"
-                        ref={fileInputRef}
-                        className="hidden"
                         accept="image/*"
                         onChange={handleAvatarUpload}
+                        disabled={isUploading}
+                        className="hidden"
                       />
-                    </div>
+                      {isUploading ? (
+                        <span className="loading loading-spinner loading-sm" />
+                      ) : (
+                        <span>📷</span>
+                      )}
+                    </label>
                   )}
                 </div>
                 <h2 className="text-2xl font-bold">

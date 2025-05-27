@@ -4,26 +4,22 @@
  */
 import { CloudinaryImage } from "@/hooks/useImage";
 
+const DEFAULT_AVATAR_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default.jpg';
+const DEFAULT_ITEM_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default-item.jpg';
+
 /**
  * Gets the API URL with the proper prefix
  */
-export function getApiUrl(endpoint: string): string {
-  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  // Remove trailing slash for consistency
-  baseUrl = baseUrl.replace(/\/$/, "");
-  // Remove any trailing '/api' or '/api/'
-  baseUrl = baseUrl.replace(/\/api$/, "").replace(/\/api\/$/, "");
-  // Remove leading slash from endpoint
-  const normalizedEndpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
-  // Always add '/api/' before the endpoint
-  return `${baseUrl}/api/${normalizedEndpoint}`;
+export function getApiUrl(endpoint: string): string {  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/+$/, '');
+  endpoint = endpoint.replace(/^\/+/, '');
+  return `${baseUrl}/${endpoint}`;
 }
 
 /**
  * Gets a properly formatted URL for an avatar image with fallback
  */
 export function getAvatarImageUrl(avatar?: string | CloudinaryImage | null): string {
-  if (!avatar) return "/default-avatar.png";
+  if (!avatar) return DEFAULT_AVATAR_URL;
   
   if (typeof avatar === "object" && avatar.url) {
     // Handle Cloudinary avatar image
@@ -35,17 +31,17 @@ export function getAvatarImageUrl(avatar?: string | CloudinaryImage | null): str
       return avatar;
     }
     // For other avatar strings, use API to fetch avatar URL
-    return getApiUrl(`users/avatar/${avatar}`);
+    return DEFAULT_AVATAR_URL;
   }
   
-  return "/default-avatar.png";
+  return DEFAULT_AVATAR_URL;
 }
 
 /**
  * Gets a properly formatted URL for an item image with fallback
  */
 export function getItemImageUrl(image?: string | CloudinaryImage | null): string {
-  if (!image) return "/default-item.jpg";
+  if (!image) return DEFAULT_ITEM_URL;
   
   if (typeof image === "object" && image.url) {
     // Handle Cloudinary item image
@@ -56,11 +52,11 @@ export function getItemImageUrl(image?: string | CloudinaryImage | null): string
     if (image.startsWith("http")) {
       return image;
     }
-    // For other image strings, use API to fetch image URL
-    return getApiUrl(`items/image/${image}`);
+    // For other image strings, use default Cloudinary URL
+    return DEFAULT_ITEM_URL;
   }
   
-  return "/default-item.jpg";
+  return DEFAULT_ITEM_URL;
 }
 
 /**
@@ -70,10 +66,10 @@ export function handleImageError(event: React.SyntheticEvent<HTMLImageElement, E
   const img = event.currentTarget;
   img.onerror = null; // Prevent infinite loop
   
-  // Choose appropriate fallback
+  // Choose appropriate fallback based on context
   if (img.src.includes('avatar') || img.src.includes('users')) {
-    img.src = "/default-avatar.png";
+    img.src = DEFAULT_AVATAR_URL;
   } else {
-    img.src = "/default-item.jpg";
+    img.src = DEFAULT_ITEM_URL;
   }
 }

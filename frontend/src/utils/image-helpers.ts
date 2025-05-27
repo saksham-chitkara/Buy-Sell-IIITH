@@ -1,10 +1,13 @@
 import { ImageProps } from 'next/image';
 import { getUploadsUrl } from './env-helpers';
 
-interface CloudinaryImage {
+export interface CloudinaryImage {
   url: string;
   public_id?: string;
 }
+
+export const DEFAULT_AVATAR_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default.jpg';
+export const DEFAULT_ITEM_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default-item.jpg';
 
 export const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   const target = e.target as HTMLImageElement;
@@ -12,21 +15,15 @@ export const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event
   
   // Check if the image is an avatar or item image based on URL patterns
   if (target.src.includes('avatar') || target.src.includes('/users/')) {
-    target.src = '/default-avatar.png';
+    target.src = DEFAULT_AVATAR_URL;
   } else {
-    target.src = '/default-item.jpg';
+    target.src = DEFAULT_ITEM_URL;
   }
-  
-  // Add a fallback for the fallback
-  target.onerror = () => {
-    target.onerror = null;
-    target.src = '/images/test.png';
-  };
 };
 
 export const getAvatarUrl = (avatar: string | CloudinaryImage | undefined): string => {
-  // Use local fallback if no avatar
-  if (!avatar) return "/default-avatar.png";
+  // Use Cloudinary fallback if no avatar
+  if (!avatar) return DEFAULT_AVATAR_URL;
   
   if (typeof avatar === "object" && "url" in avatar) {
     // Cloudinary image already has full URL
@@ -35,16 +32,13 @@ export const getAvatarUrl = (avatar: string | CloudinaryImage | undefined): stri
   
   // For string paths, check if it's already a URL
   if (avatar.startsWith("http")) return avatar;
-  
-  // Otherwise, it's a relative path that needs the base URL
-  const baseUrl = getUploadsUrl();
-  
-  return `${baseUrl}/users/${avatar}`;
+    // Otherwise, just use the default Cloudinary URL
+  return DEFAULT_AVATAR_URL;
 };
 
 export const getItemImageUrl = (image: string | CloudinaryImage | undefined): string => {
-  // Use local fallback if no image
-  if (!image) return "/default-item.jpg";
+  // Use Cloudinary fallback if no image
+  if (!image) return DEFAULT_ITEM_URL;
   
   if (typeof image === "object" && "url" in image) {
     // Cloudinary image already has full URL
@@ -53,11 +47,8 @@ export const getItemImageUrl = (image: string | CloudinaryImage | undefined): st
   
   // For string paths, check if it's already a URL
   if (image.startsWith("http")) return image;
-  
-  // Otherwise, it's a relative path that needs the base URL
-  const baseUrl = getUploadsUrl();
-  
-  return `${baseUrl}/items/${image}`;
+    // Otherwise, just use the default Cloudinary URL
+  return DEFAULT_ITEM_URL;
 };
 
 export const getImageProps = (
@@ -65,10 +56,21 @@ export const getImageProps = (
   defaultProps?: Partial<ImageProps>,
   isAvatar: boolean = false
 ): Partial<ImageProps> => {
+  // Get the appropriate URL based on the image type
+  const src = isAvatar ? getAvatarUrl(image) : getItemImageUrl(image);
+
+  // Get appropriate fallback based on the image type
+  const fallback = isAvatar ? DEFAULT_AVATAR_URL : DEFAULT_ITEM_URL;
+
   return {
-    src: isAvatar ? getAvatarUrl(image) : getItemImageUrl(image),
+    src,
     onError: handleImageError,
     alt: defaultProps?.alt || 'Image',
     ...defaultProps,
+    // Ensure these props aren't overridden
+    loading: 'lazy',
+    quality: 75, // Good balance of quality and performance
+    placeholder: 'blur',
+    blurDataURL: fallback,
   };
 };

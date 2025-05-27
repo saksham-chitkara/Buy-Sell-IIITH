@@ -10,18 +10,22 @@ export interface CloudinaryImage {
 // Get the base URL with proper fallback
 const BASE_URL = getUploadsUrl();
 
+// Default Cloudinary URLs
+const DEFAULT_AVATAR_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default.jpg';
+const DEFAULT_ITEM_URL = 'https://res.cloudinary.com/dzuw1wuki/image/upload/v1748308567/default-item.jpg';
+
 export const useImage = (path: string | CloudinaryImage | null | undefined) => {
-  const [imageUrl, setImageUrl] = useState<string>("/images/test.png");
+  const [imageUrl, setImageUrl] = useState<string>(DEFAULT_AVATAR_URL);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!path) {
-      setImageUrl("/images/test.png");
+      setImageUrl(DEFAULT_AVATAR_URL);
       setError(false);
       return;
     }
 
-    let finalUrl = "/placeholder.png";
+    let finalUrl = DEFAULT_AVATAR_URL;
 
     if (typeof path === "object" && path.url) {
       // Handle Cloudinary URL (already absolute URL)
@@ -52,12 +56,12 @@ export const useImage = (path: string | CloudinaryImage | null | undefined) => {
     img.onerror = () => {
       // Choose appropriate fallback based on path type
       if (finalUrl.includes('/users/') || finalUrl.includes('avatar')) {
-        setImageUrl("/default-avatar.png");
+        setImageUrl(DEFAULT_AVATAR_URL);
       } else {
-        setImageUrl("/default-item.jpg");
+        setImageUrl(DEFAULT_ITEM_URL);
       }
       setError(true);
-      console.log(`Failed to load image: ${finalUrl}, using fallback`);
+      console.log(`Failed to load image: ${finalUrl}, using Cloudinary fallback`);
     };
     img.src = finalUrl;
   }, [path]);

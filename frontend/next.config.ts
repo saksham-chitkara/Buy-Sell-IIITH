@@ -6,21 +6,21 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: process.env.NEXT_PUBLIC_API_PORT,
-        pathname: "/uploads/**",
-      },
-      {
-        protocol: "https",
-        hostname: "buy-sell-iiith.onrender.com",
-        pathname: "/uploads/**",
-      },
-      {
         protocol: "https",
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: process.env.NEXT_PUBLIC_API_PORT || "5000",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "buy-sell-iiith.onrender.com",
+        pathname: "/**",
+      }
     ],
   },
 };
