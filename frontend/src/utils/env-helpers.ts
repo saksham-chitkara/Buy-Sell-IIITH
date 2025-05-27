@@ -5,16 +5,19 @@
 
 /**
  * Gets the uploads URL with proper fallback logic
+ * @deprecated - Use resource-helpers.ts getAvatarImageUrl and getItemImageUrl instead
+ * which handle Cloudinary URLs properly
  */
 export const getUploadsUrl = (): string => {
-  // First try to get the environment variable
-  const envUrl = process.env.NEXT_PUBLIC_UPLOADS_URL;
-  if (envUrl) return envUrl;
-  
-  // If not set, try to construct it from API URL and port
+  // Use the API URL since we're now accessing images through API endpoints
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl) return apiUrl;
+  if (apiUrl) {
+    // Remove trailing slash for consistency
+    const baseUrl = apiUrl.replace(/\/$/, "");
+    // Remove any trailing '/api' or '/api/'
+    return baseUrl.replace(/\/api$/, "").replace(/\/api\/$/, "");
+  }
   
   // Last resort fallback for development
-  return 'http://localhost:4000';
+  return 'http://localhost:5000';
 };

@@ -128,7 +128,7 @@ export default function ChatPage() {
   const getAvatarUrl = (avatar: string | { url: string } | undefined) => {
     if (!avatar) return "/default-avatar.png";
     if (typeof avatar === "object" && "url" in avatar) return avatar.url;
-    return avatar.startsWith("http") ? avatar : `${process.env.NEXT_PUBLIC_UPLOADS_URL}/users/${avatar}`;
+    return avatar.startsWith("http") ? avatar : `/api/users/avatar/${avatar}`;
   };
 
   return (

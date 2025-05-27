@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Item from "../models/Item";
 import Order from "../models/Order";
+import { cloudinary } from "../config/cloudinary";
 
 interface AuthRequest extends Request {
   user?: {
@@ -9,13 +10,83 @@ interface AuthRequest extends Request {
   };
 }
 
-export const createItem = async (req: AuthRequest, res: Response) => {
+export const createItem = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    console.log("=====================================================");
+    console.log("[DEBUG] createItem controller called at:", new Date().toISOString());
+    
+    // Debug: Print all received fields and files
+    console.log("[DEBUG] req.body:", req.body);
+    
+    // More detailed info about files
+    if (req.files) {
+      console.log("[DEBUG] Files received:", Array.isArray(req.files) ? req.files.length : 'not an array');
+      
+      if (Array.isArray(req.files)) {
+        req.files.forEach((file: any, index) => {
+          console.log(`[DEBUG] File ${index}:`, {
+            fieldname: file.fieldname,
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            path: file.path,
+            filename: file.filename,
+            hasBuffer: !!file.buffer
+          });
+        });
+      }
+    } else {
+      console.log("[DEBUG] No files received");
+    }
+    
+    console.log("[DEBUG] req.user:", req.user);
+
     const { name, description, price, quantity, categories } = req.body;
-    const images = (req.files as Express.Multer.File[]).map((file: any) => ({
-      public_id: file.filename,
-      url: file.path
-    }));
+    
+    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
+      res.status(400).json({ message: "No images were uploaded" });
+      return;
+    }
+    
+    // Upload each image to Cloudinary directly
+    const uploadPromises = (Array.isArray(req.files) ? req.files : []).map(async (file: Express.Multer.File) => {
+      try {
+        // Convert buffer to base64 for cloudinary upload
+        const b64 = Buffer.from(file.buffer).toString('base64');
+        const dataURI = `data:${file.mimetype};base64,${b64}`;
+        
+        // Upload to cloudinary
+        console.log("[DEBUG] Attempting Cloudinary upload...");
+        try {
+          const result = await cloudinary.uploader.upload(dataURI, {
+            folder: "items",
+            resource_type: "auto"
+          });
+          
+          console.log("[DEBUG] Cloudinary upload result:", result);
+          return {
+            public_id: result.public_id,
+            url: result.secure_url
+          };
+        } catch (uploadError: any) {
+          console.error("[ERROR] Cloudinary upload failed with details:", {
+            message: uploadError?.message || "Unknown error",
+            cloudName: process.env.CLOUDINARY_CLOUD_NAME || "Not set",
+            apiKeyExists: !!process.env.CLOUDINARY_API_KEY,
+            apiSecretExists: !!process.env.CLOUDINARY_API_SECRET
+          });
+          throw uploadError;
+        }
+        
+
+      } catch (error) {
+        console.error("[ERROR] Cloudinary upload failed:", error);
+        throw error;
+      }
+    });
+    
+    const images = await Promise.all(uploadPromises);
+    console.log("[DEBUG] Processed images:", images);
 
     const item = new Item({
       name,
@@ -34,6 +105,7 @@ export const createItem = async (req: AuthRequest, res: Response) => {
       item,
     });
   } catch (error) {
+    console.error("[DEBUG] createItem error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };

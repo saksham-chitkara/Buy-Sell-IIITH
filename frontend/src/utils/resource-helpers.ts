@@ -34,8 +34,8 @@ export function getAvatarImageUrl(avatar?: string | CloudinaryImage | null): str
     if (avatar.startsWith("http")) {
       return avatar;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    return `${baseUrl}/uploads/users/${avatar}`;
+    // For other avatar strings, use API to fetch avatar URL
+    return getApiUrl(`users/avatar/${avatar}`);
   }
   
   return "/default-avatar.png";
@@ -56,8 +56,8 @@ export function getItemImageUrl(image?: string | CloudinaryImage | null): string
     if (image.startsWith("http")) {
       return image;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    return `${baseUrl}/uploads/items/${image}`;
+    // For other image strings, use API to fetch image URL
+    return getApiUrl(`items/image/${image}`);
   }
   
   return "/default-item.jpg";

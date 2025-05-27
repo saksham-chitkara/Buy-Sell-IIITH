@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { getItemImageUrl, handleImageError } from "@/utils/image-helpers";
 
 interface Item {
   _id: string;
@@ -250,14 +251,11 @@ const OrderCard = ({
       >
         <div className="relative h-48 w-full">
           <Image
-            src={
-              process.env.NEXT_PUBLIC_UPLOADS_URL +
-              "/items/" +
-              order.item.images[0]
-            }
+            src={getItemImageUrl(order.item.images[0])}
             alt={order.item.name}
             fill
             className="object-cover"
+            onError={handleImageError}
           />
           <div
             className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(

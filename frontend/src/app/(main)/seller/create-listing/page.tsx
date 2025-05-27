@@ -141,7 +141,7 @@ export default function CreateListing() {
     if (formData.name.length > 50 || formData.description.length > 500) {
       toast({
         title: "Character limit exceeded",
-        description: "I ain't hosting no stories here. 🤨",
+        description: "Limits for Name and Description are 50 and 500 respectively.",
         variant: "destructive",
       });
       return;
@@ -150,7 +150,7 @@ export default function CreateListing() {
     if (Number(formData.price) > 99999) {
       toast({
         title: "Price too high",
-        description: "Contact dev directly for large transactions. 😏",
+        description: "Contact dev directly for large transactions",
         variant: "destructive",
       });
       return;
@@ -159,7 +159,7 @@ export default function CreateListing() {
     if (Number(formData.quantity) > 20) {
       toast({
         title: "Quantity too high",
-        description: "How many factories do you own? 😭",
+        description: "Limit is 20 per listing",
         variant: "destructive",
       });
       return;
@@ -179,7 +179,9 @@ export default function CreateListing() {
       newFormData.append("itemImages", image);
     });
 
+    console.log("form", newFormData);
     const result = await createItem(newFormData);
+    console.log("result", result);
     if (result) {
       toast({
         title: "Listing created",

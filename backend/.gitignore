@@ -1,7 +1,4 @@
-uploads/items/*
-!uploads/items/default-item.jpg
-uploads/users/*
-!uploads/users/default-avatar.png
+uploads
 
 # dependencies
 /node_modules

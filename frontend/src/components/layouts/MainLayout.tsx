@@ -77,7 +77,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     if (!avatar) return undefined;
     return avatar.startsWith("http")
       ? avatar
-      : `${process.env.NEXT_PUBLIC_UPLOADS_URL}/users/${avatar}`;
+      : `/api/users/avatar/${avatar}`;
   };
 
   return (

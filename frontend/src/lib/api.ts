@@ -1,10 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/$/, ""),
+  // Do NOT set Content-Type here; let it be set per-request (JSON or multipart)
 });
 
 // Add token to requests if available

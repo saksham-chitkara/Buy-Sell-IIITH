@@ -52,6 +52,11 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
+interface CloudinaryImage {
+  public_id: string;
+  url: string;
+}
+
 interface SalesData {
   date: string;
   revenue: number;
@@ -62,7 +67,7 @@ interface Order {
   id: string;
   itemId: string;
   itemName: string;
-  itemImage: string;
+  itemImage: string | CloudinaryImage;
   buyer: {
     id: string;
     name: string;
@@ -78,7 +83,7 @@ interface Listing {
   _id: string;
   name: string;
   price: number;
-  images: string[];
+  images: (string | CloudinaryImage)[];
   quantity: number;
   isAvailable: boolean;
   createdAt: string;
@@ -88,7 +93,7 @@ interface BargainRequest {
   id: string;
   itemId: string;
   itemName: string;
-  itemImage: string;
+  itemImage: string | CloudinaryImage;
   buyer: {
     id: string;
     name: string;
@@ -394,14 +399,15 @@ export default function SellerDashboard() {
                         <div className="flex items-center gap-4">
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden">
                             <Image
-                              src={
-                                process.env.NEXT_PUBLIC_UPLOADS_URL +
-                                "/items/" +
-                                request.itemImage
-                              }
+                              src={getImageUrl(request.itemImage)}
                               alt={request.itemName}
                               fill
                               className="object-cover transition-transform hover:scale-110 duration-300"
+                              onError={(e) => {
+                                const img = e.currentTarget;
+                                img.onerror = null; // Prevent infinite loop
+                                img.src = "/default-item.jpg";
+                              }}
                             />
                           </div>
                           <span
@@ -603,14 +609,15 @@ const ListingsGrid = ({ listings }: { listings: Listing[] }) => {
         >
           <div className="relative aspect-square">
             <Image
-              src={
-                process.env.NEXT_PUBLIC_UPLOADS_URL +
-                "/items/" +
-                listing.images[0]
-              }
+              src={getImageUrl(listing.images[0])}
               alt={listing && listing.name}
               fill
               className="object-cover rounded-t-lg"
+              onError={(e) => {
+                const img = e.currentTarget;
+                img.onerror = null; // Prevent infinite loop
+                img.src = "/default-item.jpg";
+              }}
             />
             <div className="absolute top-2 right-2">
               <Badge
@@ -691,14 +698,15 @@ const OrdersTable = ({
                   <div className="flex items-center gap-4">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden">
                       <Image
-                        src={
-                          process.env.NEXT_PUBLIC_UPLOADS_URL +
-                          "/items/" +
-                          order.itemImage
-                        }
+                        src={getImageUrl(order.itemImage)}
                         alt={order.itemName}
                         fill
                         className="object-cover transition-transform hover:scale-110 duration-300"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          img.onerror = null; // Prevent infinite loop
+                          img.src = "/default-item.jpg";
+                        }}
                       />
                     </div>
                     <span
@@ -864,4 +872,13 @@ const DashboardSkeleton = () => {
       </Card>
     </div>
   );
+};
+
+// Helper function to get image URL safely
+const getImageUrl = (image: string | CloudinaryImage | undefined): string => {
+  if (!image) return '/default-item.jpg';
+  if (typeof image === 'string') {
+    return image.startsWith('http') ? image : '/default-item.jpg';
+  }
+  return image.url;
 };

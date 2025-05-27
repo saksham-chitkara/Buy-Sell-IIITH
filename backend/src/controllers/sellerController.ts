@@ -187,7 +187,7 @@ export const getBargainRequests = async (req: AuthRequest, res: Response) => {
       id: cartItem._id,
       itemId: (cartItem.item as any)._id,
       itemName: (cartItem.item as any).name,
-      itemImage: (cartItem.item as any).images[0],
+      itemImage: (cartItem.item as any).images[0]?.url || (cartItem.item as any).images[0],
       buyer: {
         id: (cartItem.user as any)._id,
         name: `${(cartItem.user as any).firstName} ${

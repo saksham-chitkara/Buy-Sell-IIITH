@@ -11,17 +11,66 @@ export const useItems = () => {
     try {
       const quantity = formData.get("quantity");
       const name = formData.get("name");
+      
+      // Store original images
+      const originalImages: File[] = [];
+      for (const pair of formData.entries()) {
+        if (pair[0] === "itemImages" && pair[1] instanceof File) {
+          originalImages.push(pair[1] as File);
+        }
+      }
+      
+      // Print all formData key-value pairs for backend debug
+      console.log("[DEBUG] FormData being sent to backend:");
+      for (const pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}: [File] name=${pair[1].name}, size=${pair[1].size}`);
+        } else {
+          console.log(`  ${pair[0]}: ${pair[1]}`);
+        }
+      }
 
       formData.set("quantity", "1");
 
       for (let i = 0; i < Number(quantity); i++) {
-        if (Number(quantity) > 1)
-          formData.set("name", `${name} (${i + 1}/${quantity})`);
-        await api.post("/items", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+        const currentFormData = new FormData();
+        
+        // Copy all non-file entries
+        for (const [key, value] of formData.entries()) {
+          if (!(value instanceof File)) {
+            currentFormData.append(key, value);
+          }
+        }
+        
+        // Set the name for this item (if multiple)
+        if (Number(quantity) > 1) {
+          currentFormData.set("name", `${name} (${i + 1}/${quantity})`);
+        }
+        
+        // Add all images to this item's form data
+        originalImages.forEach(image => {
+          currentFormData.append("itemImages", image);
         });
+        
+        console.debug("[createItem] Posting item:", {
+          name: currentFormData.get("name"),
+          quantity: currentFormData.get("quantity"),
+        });
+        
+        try {
+          // Ensure the token is in the headers
+          const token = localStorage.getItem("token");
+          const response = await api.post("/items", currentFormData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "Authorization": token ? `Bearer ${token}` : undefined
+            },
+          });
+          console.debug("[createItem] Response:", response);
+        } catch (err) {
+          console.error("[createItem] Error in POST /items:", err);
+          throw err;
+        }
       }
 
       toast({
@@ -36,6 +85,7 @@ export const useItems = () => {
         description: error.response?.data?.message || "Please try again",
         variant: "destructive",
       });
+      console.error("[createItem] Final error:", error);
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -52,8 +102,7 @@ export const useItems = () => {
         throw new Error("Invalid response format");
       }
       return data;
-    } 
-    catch (error: any) {
+    } catch (error: any) {
       console.error("Error fetching items:", error); // Debug log
       toast({
         title: "Failed to fetch items",
@@ -61,8 +110,7 @@ export const useItems = () => {
         variant: "destructive",
       });
       return []; // Return empty array on error
-    } 
-    finally {
+    } finally {
       setTimeout(() => {
         setIsLoading(false);
       }, 500);
