@@ -1,0 +1,14 @@
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  bargainedPrice: number | null;
+  quantity: number;
+  image: string;
+  seller: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  bargainStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED";
+}
