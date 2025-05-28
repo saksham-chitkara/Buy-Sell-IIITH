@@ -35,23 +35,50 @@ import {
   Edit2,
   Loader2,
   Camera,
+  ShoppingBag,
+  CheckCircle,
+  Package,
+  ClipboardList,
+  UserCheck,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { useProfile } from "@/hooks/useProfile";
 import { getAvatarUrl, DEFAULT_AVATAR_URL, handleImageError } from "@/utils/image-helpers";
 import { useRouter } from "next/navigation";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+
+interface Item {
+  _id: string;
+  name: string;
+  price: number;
+  description: string;
+  images: string[];
+  categories: string[];
+  quantity: number;
+  isAvailable: boolean;
+  createdAt: string;
+}
 
 interface UserProfile {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
-  contactNumber?: string;
   age?: number;
-  avatar?: string | { url: string };
-  isVerified: boolean;
+  contactNumber?: string;
+  avatar?: string;
   createdAt: string;
+  itemsCount: number;
+  soldItemsCount: number;
+  overallRating: number;
+  ratingCount: number;
+  items?: Item[];
 }
 
 interface Review {
@@ -93,6 +120,7 @@ export default function ProfilePage({
     newPassword: "",
     confirmPassword: "",
   });
+  const [activeTab, setActiveTab] = useState("reviews");
   const { toast } = useToast();
   const router = useRouter();
 
@@ -286,372 +314,467 @@ export default function ProfilePage({
   const avatarUrl = getAvatarUrl(profile.avatar) || DEFAULT_AVATAR_URL;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-1">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <Image
-                    src={avatarUrl}
-                    alt={`${profile.firstName}'s avatar`}
-                    fill
-                    className="rounded-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = DEFAULT_AVATAR_URL;
-                    }}
-                    priority
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      {/* User Information Section - Full Width */}
+      <Card className="bg-white dark:bg-gray-800">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            {/* Avatar */}
+            <div className="relative w-32 h-32 mx-auto mb-4">
+              <Image
+                src={getAvatarUrl(profile?.avatar)}
+                alt={profile?.firstName + " " + profile?.lastName}
+                fill
+                className="rounded-full object-cover border-2 border-black dark:border-white"
+                onError={handleImageError}
+              />
+              {isOwnProfile && (
+                <div className="absolute -bottom-2 -right-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-full"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Camera className="h-4 w-4 text-black dark:text-white" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Change profile picture</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
                   />
-                  {isOwnProfile && (
-                    <label
-                      htmlFor="avatar-upload"
-                      className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white rounded-full p-2 cursor-pointer"
-                    >
-                      <input
-                        id="avatar-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        disabled={isUploading}
-                        className="hidden"
-                      />
-                      {isUploading ? (
-                        <span className="loading loading-spinner loading-sm" />
-                      ) : (
-                        <span>📷</span>
-                      )}
-                    </label>
-                  )}
                 </div>
-                <h2 className="text-2xl font-bold">
-                  {profile.firstName} {profile.lastName}
-                  {profile.isVerified && (
-                    <span className="ml-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <BadgeCheck className="w-5 h-5 text-emerald-500 inline" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Verified User</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </span>
-                  )}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {profile.email.split("@")[0] +
-                    (profile.email.split("@")[1] === "iiit.ac.in"
-                      ? ""
-                      : "@" + profile.email.split("@")[1].split(".")[0])}
-                </p>
-                {isOwnProfile && (
-                  <div className="mt-4 space-y-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditForm({
-                          firstName: profile.firstName,
-                          lastName: profile.lastName,
-                          age: profile.age ? String(profile.age) : "",
-                          contactNumber: profile.contactNumber ? String(profile.contactNumber) : "",
-                          email: profile.email,
-                        });
-                        setIsEditing(true);
-                      }}
-                    >
-                      Edit Profile
-                    </Button>
+              )}
+            </div>
+
+            {/* Name and Actions */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold dark:text-white">
+                {profile?.firstName} {profile?.lastName}
+              </h1>
+              <div className="mt-4 flex justify-center gap-4">
+                {isOwnProfile ? (
+                  <>
+                    <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
                     <Button
                       variant="outline"
                       onClick={() => setIsChangingPassword(true)}
                     >
                       Change Password
                     </Button>
-                  </div>
-                )}
+                  </>
+                ) : null}
               </div>
+            </div>
 
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2">Contact Information</h3>
-                <div className="space-y-2">
-                  {profile.age && (
-                    <p className="text-sm">
-                      <span className="font-medium">Age:</span> {profile.age}
-                    </p>
-                  )}
-                  {profile.contactNumber && (
-                    <p className="text-sm">
-                      <span className="font-medium">Contact:</span>{" "}
-                      {profile.contactNumber}
-                    </p>
-                  )}
-                  <p className="text-sm">
-                    <span className="font-medium">Member since:</span>{" "}
-                    {new Date(profile.createdAt).toLocaleDateString()}
-                  </p>
+            {/* Contact and Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="bg-white dark:bg-gray-800 border-white/10">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Total Listings</p>
+                      <h3 className="text-2xl font-bold dark:text-white">{profile?.itemsCount || 0}</h3>
+                    </div>
+                    <Package className="h-8 w-8 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-800 border-white/10">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Items Sold</p>
+                      <h3 className="text-2xl font-bold dark:text-white">{profile?.soldItemsCount || 0}</h3>
+                    </div>
+                    <ClipboardList className="h-8 w-8 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white dark:bg-gray-800 border-white/10">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Member Since</p>
+                      <h3 className="text-base font-medium dark:text-white">
+                        {profile?.createdAt ? format(new Date(profile.createdAt), "MMMM yyyy") : "-"}
+                      </h3>
+                    </div>
+                    <UserCheck className="h-8 w-8 text-purple-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* User Details - Now more centered */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto text-center">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <div className="font-medium flex items-center justify-center gap-2 mt-1 dark:text-white">
+                  <Mail className="h-4 w-4 text-blue-500" />
+                  <span>{profile?.email}</span>
                 </div>
               </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Contact Number</p>
+                <div className="font-medium flex items-center justify-center gap-2 mt-1 dark:text-white">
+                  <Phone className="h-4 w-4 text-green-500" />
+                  <span>{profile?.contactNumber || "Not provided"}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Age</p>
+                <div className="font-medium flex items-center justify-center gap-2 mt-1 dark:text-white">
+                  <UserCheck className="h-4 w-4 text-purple-500" />
+                  <span>{profile?.age || "Not provided"}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Rating</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.round(profile?.overallRating || 0)
+                            ? "text-yellow-500 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    ({profile?.ratingCount || 0} reviews)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-              <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit Profile</DialogTitle>
-                    <DialogDescription>
-                      Update your profile information.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleEditSubmit}>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="firstName"
-                            className="text-sm font-medium"
-                          >
-                            First Name
-                          </label>
-                          <Input
-                            id="firstName"
-                            value={editForm.firstName}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                firstName: e.target.value,
-                              }))
-                            }
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="lastName"
-                            className="text-sm font-medium"
-                          >
-                            Last Name
-                          </label>
-                          <Input
-                            id="lastName"
-                            value={editForm.lastName}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                lastName: e.target.value,
-                              }))
-                            }
-                            required
-                          />
-                        </div>
-                      </div>
+      {/* Tabs for Reviews and Listings */}
+      <Tabs defaultValue="reviews" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="reviews">
+            Reviews ({profile?.ratingCount || 0})
+          </TabsTrigger>
+          <TabsTrigger value="listings">
+            Active Listings ({profile?.items?.filter(item => item.isAvailable)?.length || 0})
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="reviews" className="mt-2">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Reviews</h2>
+              {!isOwnProfile && currentUser && (
+                <Button onClick={() => setReviewDialogOpen(true)}>
+                  Write a Review
+                </Button>
+              )}
+            </div>
 
-                      <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium">
-                          Email
-                        </label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={editForm.email}
-                          onChange={(e) =>
-                            setEditForm((prev) => ({
-                              ...prev,
-                              email: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
+            {reviews.length > 0 ? (
+              <div className="grid gap-4">
+                {reviews.map((review) => (
+                  <ReviewCard key={review._id} review={review} />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8">
+                  <p className="text-gray-500 text-center">No reviews yet.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label htmlFor="age" className="text-sm font-medium">
-                            Age
-                          </label>
-                          <Input
-                            id="age"
-                            type="number"
-                            value={editForm.age}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                age: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="contactNumber"
-                            className="text-sm font-medium"
-                          >
-                            Contact Number
-                          </label>
-                          <Input
-                            id="contactNumber"
-                            value={editForm.contactNumber}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                contactNumber: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
+        <TabsContent value="listings" className="mt-2">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Active Listings</h2>
+              {isOwnProfile && (
+                <Button onClick={() => router.push('/seller/create-listing')}>
+                  Create New Listing
+                </Button>
+              )}
+            </div>
 
-                    <div className="mt-4 flex justify-end space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">Save Changes</Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+            {profile?.items && profile.items.filter(item => item.isAvailable).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profile.items
+                  .filter(item => item.isAvailable)
+                  .map(item => (
+                    <ItemCard key={item._id} item={item} />
+                  ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8">
+                  <p className="text-gray-500 text-center">
+                    {isOwnProfile 
+                      ? "You haven't listed any items for sale yet."
+                      : "No active listings available."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
-              <Dialog
-                open={isChangingPassword}
-                onOpenChange={setIsChangingPassword}
-              >
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Change Password</DialogTitle>
-                    <DialogDescription>
-                      Enter your current password and a new password.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handlePasswordSubmit}>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="currentPassword"
-                          className="text-sm font-medium"
-                        >
-                          Current Password
-                        </label>
-                        <Input
-                          id="currentPassword"
-                          type="password"
-                          value={passwordForm.currentPassword}
-                          onChange={(e) =>
-                            setPasswordForm((prev) => ({
-                              ...prev,
-                              currentPassword: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="newPassword"
-                          className="text-sm font-medium"
-                        >
-                          New Password
-                        </label>
-                        <Input
-                          id="newPassword"
-                          type="password"
-                          value={passwordForm.newPassword}
-                          onChange={(e) =>
-                            setPasswordForm((prev) => ({
-                              ...prev,
-                              newPassword: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="confirmPassword"
-                          className="text-sm font-medium"
-                        >
-                          Confirm New Password
-                        </label>
-                        <Input
-                          id="confirmPassword"
-                          type="password"
-                          value={passwordForm.confirmPassword}
-                          onChange={(e) =>
-                            setPasswordForm((prev) => ({
-                              ...prev,
-                              confirmPassword: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex justify-end space-x-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setIsChangingPassword(false);
-                          setPasswordForm({
-                            currentPassword: "",
-                            newPassword: "",
-                            confirmPassword: "",
-                          });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">Update Password</Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Reviews */}
-        <div className="md:col-span-2 space-y-6">
-          <h2 className="text-2xl font-bold mb-4">Reviews</h2>
-          {currentUser && currentUser.id !== userId && (
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
-                <div className="space-y-4">
-                  <Button onClick={() => setReviewDialogOpen(true)}>
-                    Write a Review
-                  </Button>
-                  <ReviewDialog 
-                    isOpen={reviewDialogOpen} 
-                    onClose={() => setReviewDialogOpen(false)} 
-                    onSubmit={(rating, comment) => {
-                      createReview(userId, rating, comment);
-                      setReviewDialogOpen(false);
-                    }} 
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>
+              Update your profile information.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit}>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="firstName"
+                    className="text-sm font-medium"
+                  >
+                    First Name
+                  </label>
+                  <Input
+                    id="firstName"
+                    value={editForm.firstName}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        firstName: e.target.value,
+                      }))
+                    }
+                    required
                   />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-          {reviews.length > 0 ? (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <ReviewCard key={review._id} review={review} />
-              ))}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="lastName"
+                    className="text-sm font-medium"
+                  >
+                    Last Name
+                  </label>
+                  <Input
+                    id="lastName"
+                    value={editForm.lastName}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        lastName: e.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="age" className="text-sm font-medium">
+                    Age
+                  </label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={editForm.age}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        age: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="contactNumber"
+                    className="text-sm font-medium"
+                  >
+                    Contact Number
+                  </label>
+                  <Input
+                    id="contactNumber"
+                    value={editForm.contactNumber}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        contactNumber: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-500">No reviews yet.</p>
-          )}
-        </div>
-      </div>
+
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Save Changes</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and a new password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordSubmit}>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="currentPassword"
+                  className="text-sm font-medium"
+                >
+                  Current Password
+                </label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      currentPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="newPassword"
+                  className="text-sm font-medium"
+                >
+                  New Password
+                </label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
+                  Confirm New Password
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsChangingPassword(false);
+                  setPasswordForm({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Update Password</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ReviewDialog
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+        onSubmit={async (rating, comment) => {
+          const result = await createReview(userId, rating, comment);
+          if (result) {
+            setReviewDialogOpen(false);
+            // Refresh reviews
+            const data = await getProfile(userId);
+            if (data) {
+              setReviews(data.reviews);
+            }
+          }
+        }}
+      />
     </div>
   );
 }
@@ -663,120 +786,147 @@ interface ReviewCardProps {
 const ReviewCard = ({ review }: ReviewCardProps) => {
   const router = useRouter();
 
-  // Using the utility function from image-helpers.ts instead
-
   return (
-    <div className="flex gap-4 w-full overflow-scroll">
-      <div className="relative w-10 h-10 flex-shrink-0">
-        <Image
-          src={getAvatarUrl(review.reviewer.avatar)}
-          alt={review.reviewer.firstName + " " + review.reviewer.lastName}
-          fill
-          className="rounded-full object-cover cursor-pointer"
-          onError={handleImageError}
-          onClick={() => {
-            router.push("/profile/" + review.reviewer._id);
-          }}
-        />
-      </div>
-      <div className="flex-1 w-[calc(100%-4rem)]">
-        <div className="flex items-center justify-between">
-          <h4
-            className="font-medium cursor-pointer"
-            onClick={() => {
-              router.push("/profile/" + review.reviewer._id);
-            }}
-          >
-            {review.reviewer.firstName + " " + review.reviewer.lastName}
-          </h4>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < review.rating
-                    ? "text-yellow-500 fill-current"
-                    : "text-gray-300"
-                }`}
-              />
-            ))}
+    <Card className="bg-white dark:bg-gray-800">
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-4">
+          <div className="relative w-10 h-10 flex-shrink-0">
+            <Image
+              src={getAvatarUrl(review.reviewer.avatar)}
+              alt={review.reviewer.firstName + " " + review.reviewer.lastName}
+              fill
+              className="rounded-full object-cover cursor-pointer"
+              onError={handleImageError}
+              onClick={() => {
+                router.push("/profile/" + review.reviewer._id);
+              }}
+            />
+          </div>
+          <div className="flex-1 w-[calc(100%-4rem)]">
+            <div className="flex items-center justify-between">
+              <h4
+                className="font-medium cursor-pointer"
+                onClick={() => {
+                  router.push("/profile/" + review.reviewer._id);
+                }}
+              >
+                {review.reviewer.firstName + " " + review.reviewer.lastName}
+              </h4>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < review.rating
+                        ? "text-yellow-500 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-500 mt-2">{review.comment}</p>
+            <p className="text-gray-400 text-sm mt-2">
+              {format(new Date(review.createdAt), "MMMM d, yyyy")}
+            </p>
           </div>
         </div>
-        <p className="text-gray-600 mt-1 break-words text-wrap w-full">
-          {review.comment}
-        </p>
-        <p className="text-sm text-gray-400 mt-1">
-          {format(new Date(review.createdAt), "PPP")}
-        </p>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
 const ProfileSkeleton = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Profile Info Skeleton */}
-        <div className="md:col-span-1">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="w-32 h-32 rounded-full bg-gray-200 animate-pulse mx-auto mb-4" />
-                <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto mt-2 animate-pulse" />
-                <div className="h-10 bg-gray-200 rounded w-1/2 mx-auto mt-4 animate-pulse" />
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      {/* Profile Info Skeleton */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center">
+            {/* Avatar Skeleton */}
+            <div className="relative w-32 h-32 mx-auto mb-4">
+              <div className="w-full h-full rounded-full bg-gray-200 animate-pulse border-2 border-black dark:border-white" />
+            </div>
+
+            {/* Name and Actions Skeleton */}
+            <div className="mb-6">
+              <div className="h-8 bg-gray-200 rounded w-48 mx-auto animate-pulse" />
+              <div className="mt-4 flex justify-center gap-4">
+                <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+                <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
               </div>
+            </div>
 
-              <div className="my-6 h-px bg-gray-200 animate-pulse" />
-
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse" />
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mt-1 animate-pulse" />
+            {/* Stats Cards Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="bg-white dark:bg-black border-white/10">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="h-4 bg-gray-200 w-20 rounded animate-pulse" />
+                        <div className="h-6 bg-gray-200 w-12 rounded animate-pulse mt-2" />
+                      </div>
+                      <div className="w-8 h-8 bg-gray-200 rounded animate-pulse" />
                     </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* User Details Skeleton */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto text-center">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i}>
+                  <div className="h-4 bg-gray-200 w-24 mx-auto rounded animate-pulse" />
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 bg-gray-200 w-32 rounded animate-pulse" />
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs Skeleton */}
+      <div className="w-full">
+        <div className="grid w-full grid-cols-2 mb-6">
+          <div className="h-10 bg-gray-200 rounded-tl animate-pulse" />
+          <div className="h-10 bg-gray-200 rounded-tr animate-pulse" />
         </div>
 
-        {/* Reviews Skeleton */}
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse" />
-              <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse mt-2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-4">
+        {/* Tab Content Skeleton */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="h-8 bg-gray-200 w-32 rounded animate-pulse" />
+            <div className="h-10 bg-gray-200 w-28 rounded animate-pulse" />
+          </div>
+
+          <div className="grid gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse" />
+                        <div className="h-4 bg-gray-200 w-32 rounded animate-pulse" />
                         <div className="flex gap-1">
-                          {Array.from({ length: 5 }).map((_, j) => (
-                            <div
-                              key={j}
-                              className="w-4 h-4 bg-gray-200 rounded animate-pulse"
-                            />
+                          {[1, 2, 3, 4, 5].map((j) => (
+                            <div key={j} className="w-4 h-4 bg-gray-200 rounded animate-pulse" />
                           ))}
                         </div>
                       </div>
-                      <div className="h-4 bg-gray-200 rounded w-full mt-2 animate-pulse" />
-                      <div className="h-4 bg-gray-200 rounded w-1/4 mt-2 animate-pulse" />
+                      <div className="h-16 bg-gray-200 rounded w-full mt-2 animate-pulse" />
+                      <div className="h-4 bg-gray-200 rounded w-24 mt-2 animate-pulse" />
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -784,58 +934,51 @@ const ProfileSkeleton = () => {
 };
 
 interface ReviewDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSubmit: (rating: number, comment: string) => void;
 }
 
-const ReviewDialog = ({ isOpen, onClose, onSubmit }: ReviewDialogProps) => {
+function ReviewDialog({ open, onOpenChange, onSubmit }: ReviewDialogProps) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Write a Review</DialogTitle>
+          <DialogDescription>Share your experience with this seller.</DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Rating</label>
-            <div className="flex gap-1 mt-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setRating(i + 1)}
-                  className="focus:outline-none"
-                >
-                  <Star
-                    className={`w-6 h-6 ${
-                      i < rating
-                        ? "text-yellow-500 fill-current"
-                        : "text-gray-300"
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
+        <div className="space-y-4 py-4">
+          <div className="flex items-center justify-center gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`w-8 h-8 cursor-pointer transition-colors ${
+                  i < rating
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                }`}
+                onClick={() => setRating(i + 1)}
+              />
+            ))}
           </div>
-
-          <div>
-            <label className="text-sm font-medium">Comment</label>
+          <div className="space-y-2">
+            <label htmlFor="comment" className="text-sm font-medium">
+              Review Comment
+            </label>
             <textarea
+              id="comment"
+              className="w-full min-h-[100px] p-3 rounded-md border border-gray-300"
+              placeholder="Write your review here..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              rows={4}
-              placeholder="Write your review..."
             />
           </div>
         </div>
-
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
@@ -843,6 +986,7 @@ const ReviewDialog = ({ isOpen, onClose, onSubmit }: ReviewDialogProps) => {
               onSubmit(rating, comment);
               setRating(5);
               setComment("");
+              onOpenChange(false);
             }}
             disabled={!comment.trim()}
           >
@@ -851,5 +995,46 @@ const ReviewDialog = ({ isOpen, onClose, onSubmit }: ReviewDialogProps) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+interface ItemCardProps {
+  item: Item;
+}
+
+const ItemCard = ({ item }: ItemCardProps) => {
+  const router = useRouter();
+
+  return (
+    <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white dark:bg-gray-800" onClick={() => router.push(`/explore/item/${item._id}`)}>
+      <div className="relative aspect-square">
+        <Image
+          src={item.images[0]}
+          alt={item.name}
+          fill
+          className="object-cover"
+          onError={handleImageError}
+        />
+      </div>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-semibold line-clamp-1">{item.name}</h3>
+          <span className="text-primary font-bold">₹{item.price}</span>
+        </div>
+        <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {item.categories.slice(0, 2).map((category: string, index: number) => (
+            <span key={index} className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
+              {category}
+            </span>
+          ))}
+          {item.categories.length > 2 && (
+            <span className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
+              +{item.categories.length - 2}
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
