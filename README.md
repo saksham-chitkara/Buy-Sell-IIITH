@@ -4,7 +4,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Latest-green)](https://www.mongodb.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-4.x-lightgrey)](https://expressjs.com/)
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success)](http://bs-iiith.vercel.app/)
 
 CampusMart is a modern, full-stack e-commerce platform designed specifically for IIIT Hyderabad's campus community. It provides a secure and user-friendly marketplace where students can buy and sell items within the campus ecosystem.
 
