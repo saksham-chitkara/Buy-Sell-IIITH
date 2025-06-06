@@ -313,7 +313,7 @@ export default function CreateListing() {
                       onClick={() => removeImage(index)}
                       className="absolute top-2 right-2 p-1 bg-white/50 rounded-full hover:bg-white/75 transition-colors"
                     >
-                      <X className="w-4 h-4 text-red-500" />
+                      <X className="w-4 h-4 text-white" />
                     </button>
                   </div>
                 ))}

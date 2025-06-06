@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ReCAPTCHA, ReCAPTCHARef } from "@/components/recaptcha";
+import { ReCAPTCHA } from "@/components/recaptcha";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -25,7 +26,6 @@ export default function LoginPage() {
   const { login, isLoading, loginWithCAS } = useAuth();
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const { toast } = useToast();
-  const recaptchaRef = useRef<ReCAPTCHARef>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,14 +39,7 @@ export default function LoginPage() {
       return;
     }
 
-    try {
-      await login(email, password, recaptchaToken);
-    } catch (error) {
-      // Always reset reCAPTCHA on any error
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
-      // Error toast is already handled by useAuth hook
-    }
+    await login(email, password, recaptchaToken);
   };
 
   return (
@@ -106,7 +99,6 @@ export default function LoginPage() {
                 </div>
 
                 <ReCAPTCHA
-                  ref={recaptchaRef}
                   onVerify={setRecaptchaToken}
                   theme="light"
                   size="normal"

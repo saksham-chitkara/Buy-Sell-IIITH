@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CampusMart",
   description: "IIIT Hyderabad's Campus Marketplace",
-  icons: false
+  icons: null
 };
 
 export const viewport = {
@@ -33,7 +33,8 @@ export default function RootLayout({
     <html lang="en">
       <head></head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <AuthProvider>
           {children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ReCAPTCHA, ReCAPTCHARef } from "@/components/recaptcha";
+import { ReCAPTCHA } from "@/components/recaptcha";
 
 interface UserData {
   email: string;
@@ -42,7 +42,6 @@ export default function CompleteRegistration() {
   const { completeCASRegistration, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const recaptchaRef = useRef<ReCAPTCHARef>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -86,18 +85,12 @@ export default function CompleteRegistration() {
       return;
     }
 
-    try {
-      await completeCASRegistration({
-        age: parseInt(formData.age),
-        contactNumber: formData.contactNumber,
-        password: formData.password,
-        recaptchaToken,
-      });
-    } catch (error) {
-      // Reset reCAPTCHA on registration failure
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
-    }
+    await completeCASRegistration({
+      age: parseInt(formData.age),
+      contactNumber: formData.contactNumber,
+      password: formData.password,
+      recaptchaToken,
+    });
   };
 
   if (!userData) {
@@ -236,12 +229,7 @@ export default function CompleteRegistration() {
                   </div>
                 </div>
 
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  onVerify={setRecaptchaToken}
-                  theme="light"
-                  size="normal"
-                />
+                <ReCAPTCHA onVerify={setRecaptchaToken} theme="light" size="normal" />
 
                 <Button
                   type="submit"
