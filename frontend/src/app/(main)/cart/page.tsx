@@ -376,14 +376,14 @@ const CartItemCard = ({ item, onRemove, onBargain }: CartItemCardProps) => {
           {/* Item Image */}
           <div 
             onClick={() => router.push(`/explore/item/${item.itemId}`)}
-            className="flex-shrink-0 relative w-full md:w-32 h-32 cursor-pointer overflow-hidden rounded-lg hover:opacity-80 transition-opacity"
+            className="flex-shrink-0 relative w-full md:w-32 h-64 md:h-32 cursor-pointer overflow-hidden rounded-lg hover:opacity-80 transition-opacity"
           >
             <Image
               src={getItemImageUrl(item.image)}
               alt={item.name}
               fill
               onError={handleImageError}
-              className="object-cover"
+              className="object-contain md:object-cover"
             />
           </div>
 

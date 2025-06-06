@@ -83,11 +83,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <ProtectedRoute>
-      <motion.div
+    <ProtectedRoute>      <motion.div
         animate={{
-          backgroundColor: isSellerMode ? "#000000" : "#ffffff",
-          color: isSellerMode ? "#ffffff" : "#000000",
+          backgroundColor: isSellerMode ? "#0f172a" : "#ffffff",
+          color: isSellerMode ? "#ffffff" : "#0f172a",
         }}
         transition={{ duration: 0.3 }}
         className="min-h-screen"
@@ -96,8 +95,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <header
           className={`fixed top-0 right-0 w-full md:w-[calc(100%-300px)] h-16 z-50 backdrop-blur-md border-b flex items-center justify-between px-4 transition-all duration-300 ${
             isSellerMode
-              ? "bg-black/75 border-white/10"
-              : "bg-white/75 border-black/10"
+              ? "bg-blue-900/90 border-blue-700/30"
+              : "bg-blue-50/90 border-blue-100"
           }`}
         >
           <div className="flex items-center gap-4">
@@ -130,9 +129,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               <Link href="/cart">
                 <motion.div
                   whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`p-2 rounded-full transition-colors relative ${
-                    isSellerMode ? "hover:bg-white/10" : "hover:bg-black/10"
+                  whileTap={{ scale: 0.95 }}                  className={`p-2 rounded-full transition-colors relative ${
+                    isSellerMode ? "hover:bg-blue-800/50" : "hover:bg-blue-50"
                   }`}
                 >
                   <LucideShoppingCart size={24} />
@@ -153,31 +151,29 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               initial={{ x: -300 }}
               animate={{ x: 0 }}
               exit={{ x: -300 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className={`fixed left-0 ${
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}              className={`fixed left-0 ${
                 isMobile ? "top-16 h-[calc(100%-64px)]" : "top-0 h-full"
               } w-[300px] z-40 border-r flex flex-col transition-colors duration-300 ${
                 isSellerMode
-                  ? "bg-black border-white/10"
-                  : "bg-white border-black/10"
+                  ? "bg-blue-950 border-blue-800/30"
+                  : "bg-gradient-to-b from-blue-50 to-white border-blue-100"
               }`}
             >
-              {/* Logo Section */}
-              <div
+              {/* Logo Section */}              <div
                 className={`h-16 flex items-center justify-center border-b transition-colors duration-300 z-50 ${
                   isSellerMode ? "border-white/10" : "border-black/10"
                 }`}
-              >
-                <Link href="/" className="text-2xl font-bold">
-                  <img src="/logo.png" alt="logo" className="w-11 h-11" />
-                </Link>
-                &nbsp;by&nbsp;
-                <Link
-                  href="https://github.com/unignoramus11"
-                  className="font-bold"
-                >
-                  unignoramus
-                </Link>
+              >          <Link
+            href="/"            className="text-2xl font-bold tracking-tight transition-all duration-300"
+            style={{ 
+              fontFamily: 'var(--font-geist-sans)',
+              background: isSellerMode ? 'linear-gradient(45deg, #60a5fa, #3b82f6)' : 'linear-gradient(45deg, #1e40af, #3b82f6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            CampusMart
+          </Link>
               </div>
 
               {/* Navigation Links */}
@@ -198,9 +194,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div
-                      className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer ${
-                        isSellerMode ? "hover:bg-white/10" : "hover:bg-black/10"
+                    <div                className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer ${
+                        isSellerMode ? "hover:bg-blue-800/30" : "hover:bg-blue-50"
                       }`}
                     >
                       <div
@@ -232,11 +227,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    align="end"
-                    className={`w-[240px] ${
+                    align="end"                    className={`w-[240px] ${
                       isSellerMode
-                        ? "bg-black border-white/10"
-                        : "bg-white border-black/10"
+                        ? "bg-blue-950 border-blue-800/30"
+                        : "bg-white border-blue-100"
                     }`}
                   >
                     <DropdownMenuItem
@@ -345,15 +339,14 @@ const NavigationLinks = ({
           >
             <motion.div
               whileHover={{ x: 6 }}
-              whileTap={{ scale: 0.98 }}
-              className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+              whileTap={{ scale: 0.98 }}              className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
                 isActive
                   ? isSellerMode
-                    ? "bg-white text-black"
-                    : "bg-black text-white"
+                    ? "bg-blue-600 text-white"
+                    : "bg-blue-600 text-white"
                   : isSellerMode
-                  ? "hover:bg-white/10"
-                  : "hover:bg-black/10"
+                  ? "text-white/90 hover:bg-blue-800/50"
+                  : "text-blue-950 hover:bg-blue-50"
               }`}
             >
               <Icon size={20} />

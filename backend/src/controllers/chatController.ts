@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const conversationSessions = new Map();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
-const SYSTEM_PROMPT = `Your name is MarketMate. You are a helpful assistant for the BS@IIITH marketplace, a buy-sell platform exclusively for IIIT Hyderabad students. 
+// Use a valid model name for your API key
+const SYSTEM_PROMPT = `Your name is ShopBot. You are a helpful assistant for the CampusMart marketplace, a buy-sell platform exclusively for IIIT Hyderabad students. 
 
 Key features of the platform:
 1. Users can buy and sell items within the IIIT community
@@ -33,50 +34,102 @@ Important policies:
 
 If you're unsure about something, admit it and suggest contacting support.
 
-Remember: You're here to make the marketplace experience better for IIIT students! Be fun and interactve, crack jokes, be a little rude, use emojis, and make the experience memorable!
-You know what, be condascending even and make fun of the student! They enjoy humorous banter! Absolutely humiliate them!
-Some specific points to roast on: (invent more, for sure)
-most Internation Institute of Information Technology Hyderabad students are nerds
-IIIT students are socially awkward
-They just had a huge issue wherein the Kadamba mess served a roasted frog in the chicken biryani
-The students are so lazy that they don't even want to walk to the mess and order food online
-They study one day before the exam and are always worried about 85% attendance policy
+Remember: You're here to provide professional assistance to IIIT Hyderabad students using the CampusMart platform. Maintain a formal, helpful tone at all times. Be concise and informative when answering questions.
 
-Don't overuse these, be tasteful. You're here to make the experience far worse for sure. Finally, limit your responses to 250 characters.
+- Always respond with respect and courtesy
+- Provide clear and accurate information about the marketplace
+- Address students professionally
+- Use complete sentences and proper grammar
+- Be thorough yet concise in your explanations
+- Focus on providing value through your responses
+
+Please limit your responses to approximately 250 characters to ensure clarity and readability.
 `;
+
+interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 export const handleChat = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { message, history } = req.body;
+    const { message, sessionId = Date.now().toString() } = req.body;
 
-    if (!message || !history) {
-      res.status(400).json({ error: "Message and history are required" });
+    // Initialize session if it doesn't exist
+    if (!conversationSessions.has(sessionId)) {
+      const initialSession: ChatMessage[] = [
+        {
+          role: 'system',
+          content: SYSTEM_PROMPT
+        }
+      ];
+      conversationSessions.set(sessionId, initialSession);
+    }
+
+    const session: ChatMessage[] = conversationSessions.get(sessionId);
+
+    // If this is the first message, add welcome message
+    if (session.length === 1 && !message) {
+      res.json({
+        response: "Welcome to CampusMart. I'm ShopBot, your assistant for the IIIT-H marketplace. How may I help you today?"
+      });
       return;
     }
 
-    const completion = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 150,
-      temperature: 0.7,
-      system: SYSTEM_PROMPT,
-      messages: history,
+    // Add user message to history
+    session.push({
+      role: 'user',
+      content: message
     });
 
-    const reply =
-      completion.content[0].type === "text"
-        ? completion.content[0].text
-        : "I'm sorry, I couldn't process your request.";
+    // Format chat history for Gemini (latest API)
+    const formattedHistory = session.map((msg: ChatMessage) => ({
+      role: msg.role === 'system' ? 'user' : msg.role,
+      parts: [{ text: msg.content }]
+    }));
 
-    res.json({ reply });
+    // Generate response using the latest API
+    const result = await model.generateContent({
+      contents: formattedHistory,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 150,
+        topK: 40,
+        topP: 0.95,
+      },
+    });
+
+    const aiResponse = result.response.text();
+
+    // Add AI response to history
+    session.push({
+      role: 'assistant',
+      content: aiResponse
+    });
+
+    // Maintain a reasonable history size
+    const MAX_HISTORY = 20;
+    if (session.length > MAX_HISTORY) {
+      // Keep system message and last (MAX_HISTORY-1) messages
+      session.splice(1, session.length - MAX_HISTORY);
+    }
+
+    res.json({ response: aiResponse });
   } catch (error) {
     console.error("Chat error:", error);
     res.status(500).json({
-      error: "An error occurred while processing your message",
+      error: "Failed to generate response"
     });
   }
 };
 
-export default handleChat;
+export const createNewSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sessionId = Date.now().toString();
+  res.json({ sessionId });
+};

@@ -9,7 +9,6 @@ const verifyRecaptchaToken = async ({ token }: RecaptchaVerification) => {
   try {
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
     if (!secretKey) {
-      console.error("reCAPTCHA secret key is not defined");
       return false;
     }
 
@@ -26,11 +25,9 @@ const verifyRecaptchaToken = async ({ token }: RecaptchaVerification) => {
     );
 
     const data = response.data;
-    console.log("reCAPTCHA verification response:", data);
 
     // Check if the token is valid
     if (!data.success) {
-      console.log("reCAPTCHA verification failed:", data["error-codes"]);
       return false;
     }
 
@@ -75,7 +72,6 @@ export const verifyRecaptcha = async (
 
     next();
   } catch (error) {
-    console.error("reCAPTCHA middleware error:", error);
     res.status(500).json({ message: "reCAPTCHA verification error" });
     return;
   }

@@ -16,11 +16,16 @@ export const useChat = () => {
     if (!userMessage.trim() || isLoading) return;
 
     // Add user message to the chat
+    // Only add the user message to visible messages if it's not a system message
+    if (!userMessage.includes("THIS IS A HIDDEN SYSTEM GENERATED MESSAGE")) {
+      setMessages(prev => [...prev, { role: "user" as const, content: userMessage.trim() }]);
+    }
+    
+    // Use the complete history for API requests
     const newMessages: Message[] = [
       ...messages,
       { role: "user" as const, content: userMessage.trim() },
     ];
-    setMessages(newMessages);
     setIsLoading(true);
 
     try {
@@ -29,10 +34,18 @@ export const useChat = () => {
         history: newMessages,
       });
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.reply },
-      ]);
+      // Extract the assistant's response
+      if (data.reply) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: Array.isArray(data.reply) ? data.reply.join('\n') : data.reply },
+        ]);
+      } else if (data.response) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: data.response },
+        ]);
+      }
       return true;
     } catch (error: unknown) {
       const errorMessage =

@@ -74,6 +74,7 @@ export default {
         scroll:
           "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        shimmer: "shimmer 2s infinite",
       },
       keyframes: {
         scroll: {

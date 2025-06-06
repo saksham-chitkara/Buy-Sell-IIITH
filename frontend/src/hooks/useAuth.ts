@@ -56,6 +56,7 @@ export const useAuth = () => {
           "Please check your credentials",
         variant: "destructive",
       });
+      throw error; // Re-throw the error so it can be caught by the component
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +86,7 @@ export const useAuth = () => {
         description: err.response?.data?.message || "Please try again",
         variant: "destructive",
       });
+      throw error; // Re-throw the error so it can be caught by the component
     } finally {
       setTimeout(() => {
         setIsLoading(false);
@@ -157,7 +159,7 @@ export const useAuth = () => {
 
       const { data } = await api.post("/auth/cas/complete", {
         tempToken,
-        ...additionalDetails, // recaptchaToken included in additionalDetails
+        ...additionalDetails,
       });
 
       localStorage.removeItem("tempToken");
@@ -179,6 +181,7 @@ export const useAuth = () => {
         description: err.response?.data?.message || "Please try again",
         variant: "destructive",
       });
+      throw error; // Re-throw the error so it can be caught by the component
     } finally {
       setIsLoading(false);
     }

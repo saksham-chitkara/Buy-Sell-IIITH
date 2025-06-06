@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-console.log("AUTH MODULE LOADED AT:", new Date().toISOString());
-
 interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -17,10 +15,8 @@ export const auth = async (
 ): Promise<void> => {
   try {    
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    console.log("Auth token:", token);
     
     if (!token) {
-      console.log("No auth token found");
       res.status(401).json({ message: "No auth token found" });
       return;
     }

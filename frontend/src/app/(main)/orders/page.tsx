@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCcw,
-  Squirrel,
+  ShoppingBag
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useOrders } from "@/hooks/useOrders";
@@ -67,6 +67,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("pending");
   const [orders, setOrders] = useState<Order[]>([]);
   const { getOrders, regenerateOTP, isLoading, cancelOrder } = useOrders();
@@ -153,23 +154,57 @@ export default function OrdersPage() {
               <OrdersSkeleton />
             ) : getFilteredOrders(activeTab).length === 0 ? (
               <motion.div
-                className="flex items-center justify-center h-[400px] w-full"
-                initial={{ opacity: 0, scale: 0.5 }}
+                className="flex flex-col items-center justify-center h-[400px] w-full gap-4"
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.div
-                  animate={{
-                    y: [0, -10, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <Squirrel className="w-24 h-24 text-gray-400" />
-                </motion.div>
+                <div className="flex flex-col items-center gap-6">
+                  <motion.div
+                    className="relative"
+                    animate={{
+                      scale: [1, 1.02, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                      <motion.div 
+                        className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-full"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                      <ShoppingBag size={48} className="text-gray-400 dark:text-gray-500 relative z-10" />
+                    </div>
+                  </motion.div>
+                  <div className="text-center space-y-3">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      {activeTab === "pending" 
+                        ? "No Pending Orders" 
+                        : activeTab === "delivered"
+                        ? "No Delivered Orders"
+                        : "No Cancelled Orders"}
+                    </h3>
+                    <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                      {activeTab === "pending" 
+                        ? "When you place orders, they will appear here until they are delivered." 
+                        : activeTab === "delivered"
+                        ? "Items you've received will be listed here after successful delivery."
+                        : "Any orders you or the seller cancel will be shown in this section."}
+                    </p>
+                    {activeTab === "pending" && (
+                      <Button
+                        onClick={() => router.push("/explore")}
+                        className="mt-4"
+                      >
+                        Browse Items
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </motion.div>
             ) : (
               <motion.div
@@ -376,26 +411,41 @@ const OrderCard = ({
 
 const OrdersSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <motion.div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       {[1, 2, 3].map((i) => (
-        <Card key={i} className="overflow-hidden">
-          <div className="h-48 bg-gray-200 animate-pulse" />
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div>
-                <div className="h-6 bg-gray-200 rounded w-3/4 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-1/2 mt-2 animate-pulse" />
-              </div>
-              <div className="flex justify-between">
-                <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse" />
-                <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse" />
-              </div>
-              <div className="h-16 bg-gray-200 rounded animate-pulse" />
-              <div className="h-10 bg-gray-200 rounded animate-pulse" />
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: i * 0.1 }}
+        >
+          <Card className="overflow-hidden">
+            <div className="relative h-48">
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
             </div>
-          </CardContent>
-        </Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md w-3/4 animate-pulse" />
+                  <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md w-1/2 mt-2 animate-pulse" />
+                </div>
+                <div className="flex justify-between">
+                  <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md w-1/4 animate-pulse" />
+                  <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md w-1/4 animate-pulse" />
+                </div>
+                <div className="h-16 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md animate-pulse" />
+                <div className="h-10 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700 rounded-md animate-pulse" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };

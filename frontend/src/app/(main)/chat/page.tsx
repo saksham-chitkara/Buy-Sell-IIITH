@@ -16,7 +16,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { useCart } from "@/hooks/useCart";
 import { useSeller } from "@/hooks/useSeller";
 
-const CHATBOT_NAME = "MarketMate";
+const CHATBOT_NAME = "ShopBot";
 
 interface CloudinaryImage {
   url: string;
@@ -158,7 +158,7 @@ export default function ChatPage() {
                 {CHATBOT_NAME}
               </h2>
               <p className="text-sm text-gray-600">
-                Your friendly marketplace assistant
+                CampusMart Assistant
               </p>
             </div>
           </div>
@@ -168,43 +168,57 @@ export default function ChatPage() {
           ref={scrollAreaRef}
           className="flex-1 p-4 overflow-y-auto space-y-4"
         >
-          {messages.map((message, index) => (
-            <AnimatePresence key={index}>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-3 ${
-                  message.role === "user"
-                    ? "flex-row-reverse"
-                    : "items-start"
-                }`}
-              >
-                {message.role === "user" ? (
-                  user && (
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage
-                        src={getAvatarUrl(user.avatar)}
-                        alt={`${user.firstName}'s avatar`}
-                      />
-                    </Avatar>
-                  )
-                ) : (
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground">
-                    <Bot className="w-4 h-4" />
-                  </div>
-                )}
-                <div
-                  className={`max-w-[80%] rounded-lg p-3 text-sm ${
+          {messages
+            .filter((message) => {
+              // Filter out hidden system messages
+              if (!message || !message.content) return false;
+              return !message.content.includes(
+                "THIS IS A HIDDEN SYSTEM GENERATED MESSAGE"
+              );
+            })
+            .map((message, index) => (
+              <AnimatePresence key={index}>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex gap-3 ${
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      ? "flex-row-reverse"
+                      : "items-start"
                   }`}
                 >
-                  {message.content}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          ))}
+                  {message.role === "user" ? (
+                    user && (
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage
+                          src={getAvatarUrl(user.avatar)}
+                          alt={`${user.firstName}'s avatar`}
+                        />
+                      </Avatar>
+                    )
+                  ) : (
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground">
+                      <Bot className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 text-sm break-words whitespace-pre-wrap ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {typeof message.content === "string"
+                      ? message.content.split("\n").map((line, i) => (
+                          <div key={i} className="mb-1">
+                            {line}
+                          </div>
+                        ))
+                      : message.content}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            ))}
           <div ref={messagesEndRef} />
         </ScrollArea>
 
