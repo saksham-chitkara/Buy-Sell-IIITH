@@ -38,13 +38,10 @@ cd Buy-Sell-IIITH
 ```
 
 2. Set up environment variables:
-```bash
-# In backend directory
-cp .env.example .env
 
-# In frontend directory
-cp .env.example .env
-```
+- In the backend directory, create a `.env` file using `.env.example` as a template.
+- In the frontend directory, create a `.env` file using `.env.example` as a template.
+- Fill in the required environment variables in both files.
 
 3. Install dependencies and start the backend:
 ```bash
