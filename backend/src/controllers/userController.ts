@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import User from "../models/User";
 import Review from "../models/Review";
+import Item from "../models/Item";
+import Order from "../models/Order";
 
 interface AuthRequest extends Request {
   user?: {
@@ -25,9 +27,47 @@ export const getProfile = async (
     const reviews = await Review.find({ reviewee: req.params.id })
       .populate("reviewer", "firstName lastName avatar")
       .sort({ createdAt: -1 });
+    
+    // Get user's items with current status
+    const items = await Item.find({ seller: req.params.id }).lean();
+    
+    // Get all orders to find out which items have been sold
+    const completedOrders = await Order.find({
+      item: { $in: items.map(item => item._id) },
+      status: "DELIVERED"
+    }).lean();
+    
+    // Create a map of sold item IDs for quick lookup
+    const soldItemsMap = completedOrders.reduce((map, order) => {
+      map[order.item.toString()] = true;
+      return map;
+    }, {} as Record<string, boolean>);
+    
+    // Track counts properly
+    let activeItemsCount = 0;
+    let soldItemsCount = 0;
+    
+    // Update items to reflect sold status and count properly
+    const updatedItems = items.map(item => {
+      // If the item is in our sold items map, mark it as unavailable
+      if (soldItemsMap[item._id.toString()]) {
+        soldItemsCount++;
+        return { ...item, isAvailable: false };
+      } else if (item.isAvailable) {
+        activeItemsCount++;
+        return item;
+      }
+      return item;
+    });
 
     res.json({
-      user,
+      user: { 
+        ...user, 
+        items: updatedItems,
+        itemsCount: items.length,  // Total number of items (active + sold + unavailable)
+        activeItemsCount: activeItemsCount, // Only currently available items
+        soldItemsCount: soldItemsCount // Only sold items
+      },
       reviews,
     });
   } catch (error) {

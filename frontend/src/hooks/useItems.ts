@@ -9,8 +9,10 @@ export const useItems = () => {
   const createItem = async (formData: FormData) => {
     setIsLoading(true);
     try {
-      const quantity = formData.get("quantity");
+      // Always set quantity to 1
+      formData.set("quantity", "1");
       const name = formData.get("name");
+      const quantity = "1"; // Hard-coded to 1
       
       // Store original images
       const originalImages: File[] = [];
@@ -30,9 +32,8 @@ export const useItems = () => {
         }
       }
 
-      formData.set("quantity", "1");
-
-      for (let i = 0; i < Number(quantity); i++) {
+      // Always create just one item
+      for (let i = 0; i < 1; i++) {
         const currentFormData = new FormData();
         
         // Copy all non-file entries
@@ -42,10 +43,7 @@ export const useItems = () => {
           }
         }
         
-        // Set the name for this item (if multiple)
-        if (Number(quantity) > 1) {
-          currentFormData.set("name", `${name} (${i + 1}/${quantity})`);
-        }
+        // No need to modify the name since quantity is always 1
         
         // Add all images to this item's form data
         originalImages.forEach(image => {

@@ -4,12 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 
 export interface CartItem {
   id: string;
-  itemId: string; // Adding itemId property
+  itemId: string;
   name: string;
   price: number;
   bargainedPrice: number | null;
   quantity: number;
   image: any; // Cloudinary image
+  stock: number;
+  isAvailable: boolean;
   seller: {
     name: string;
     email: string;
@@ -77,6 +79,8 @@ export const useCart = () => {
             : null,
         quantity: item.quantity,
         image: item.item.images[0], // Assuming first image is main
+        stock: item.item.quantity,
+        isAvailable: item.item.isAvailable,
         seller: {
           
           name: `${sellers[item.item.seller].user.firstName} ${

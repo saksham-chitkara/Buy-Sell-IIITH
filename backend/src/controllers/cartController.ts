@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import CartItem from "../models/CartItem";
 import Item from "../models/Item";
+import Order from "../models/Order";
 
 interface AuthRequest extends Request {
   user?: {
@@ -64,6 +65,25 @@ export const getCart = async (
     const cartItems = await CartItem.find({ user: req.user!.id })
       .populate("item")
       .populate("item.seller", "firstName lastName email");
+
+    // Check if any items have been purchased (completed orders)
+    for (const cartItem of cartItems) {
+      // When using populate(), we need to check if item exists and if it's populated
+      if (cartItem.item && typeof cartItem.item !== 'string') {
+        const itemId = cartItem.item._id;
+        
+        // Mark item as unavailable if it's been delivered (purchased)
+        const deliveredOrder = await Order.findOne({
+          item: itemId,
+          status: "DELIVERED"
+        });
+        
+        if (deliveredOrder) {
+          // Get the actual item document to update its availability
+          await Item.findByIdAndUpdate(itemId, { isAvailable: false });
+        }
+      }
+    }
 
     res.json(cartItems);
   } catch (error) {

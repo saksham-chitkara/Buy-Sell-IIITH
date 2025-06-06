@@ -95,7 +95,7 @@ export default function ChatPage() {
       const sellerBargainRequests = await getBargainRequests();
 
       if (data) {
-        const message = `THIS IS A HIDDEN SYSTEM GENERATED MESSAGE, USE THIS INFO FOR GIVING INFORMED REPLIES. ALSO, GREET THE USER NOW. BE SARCASTIC IF YOU WISH, THOUGH. YOU CAN USE THE INFO FROM THEIR REVIEWS TO BE EVEN MORE SPECIFICALLY MEAN.
+        const message = `THIS IS A HIDDEN SYSTEM GENERATED MESSAGE, USE THIS INFO FOR GIVING INFORMED REPLIES. ALSO, GREET THE USER NOW.
           Hi, I'm ${user.firstName} ${user.lastName}. My email is ${
           user.email
         }. Here's all you need to know about me.: ${

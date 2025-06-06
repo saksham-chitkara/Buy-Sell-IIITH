@@ -44,7 +44,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { useProfile } from "@/hooks/useProfile";
-import { getAvatarUrl, DEFAULT_AVATAR_URL, handleImageError } from "@/utils/image-helpers";
+import { getAvatarUrl, getItemImageUrl, DEFAULT_AVATAR_URL, handleImageError } from "@/utils/image-helpers";
 import { useRouter } from "next/navigation";
 import {
   Tabs,
@@ -75,6 +75,7 @@ interface UserProfile {
   avatar?: string;
   createdAt: string;
   itemsCount: number;
+  activeItemsCount: number;
   soldItemsCount: number;
   overallRating: number;
   ratingCount: number;
@@ -1009,7 +1010,9 @@ const ItemCard = ({ item }: ItemCardProps) => {
     <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white dark:bg-gray-800" onClick={() => router.push(`/explore/item/${item._id}`)}>
       <div className="relative aspect-square">
         <Image
-          src={item.images[0]}
+          src={item.images && item.images.length > 0 ? 
+            (typeof item.images[0] === 'string' ? item.images[0] : (item.images[0] as any).url || "/default-item.jpg") 
+            : "/default-item.jpg"}
           alt={item.name}
           fill
           className="object-cover"

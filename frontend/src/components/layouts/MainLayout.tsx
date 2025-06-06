@@ -113,18 +113,16 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             )}
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link href="/chat">
+          <div className="flex items-center gap-6">            <Link href="/chat">
               <ChatButton />
-            </Link>
-
-            <div className="flex items-center gap-2">
+            </Link>            <div className="flex items-center gap-2">
               <span className="text-sm font-medium">
                 {isSellerMode ? "Seller Mode" : "Buyer Mode"}
               </span>
               <Switch
                 checked={isSellerMode}
                 onCheckedChange={handleSellerModeToggle}
+                className="data-[state=checked]:bg-blue-600"
               />
             </div>
 
@@ -144,65 +142,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 </motion.div>
               </Link>
             )}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div
-                  className={`w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 transition-colors ${
-                    isSellerMode ? "border-white/10" : "border-black/10"
-                  }`}
-                >
-                  {user?.avatar ? (
-                    <img
-                      src={getAvatarUrl(user.avatar)}
-                      alt="User avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User size={20} />
-                  )}
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className={`w-[240px] ${
-                  isSellerMode
-                    ? "bg-black border-white/10"
-                    : "bg-white border-black/10"
-                }`}
-              >
-                <DropdownMenuItem
-                  asChild
-                  className={
-                    isSellerMode
-                      ? "text-white cursor-pointer"
-                      : "text-black cursor-pointer"
-                  }
-                >
-                  <Link
-                    href="/profile"
-                    className={`flex items-center ${
-                      isSellerMode
-                        ? "hover:bg-white/10"
-                        : "hover:bg-black/10"
-                    }`}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator
-                  className={isSellerMode ? "bg-white/10" : "bg-black/10"}
-                />
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-600/10 dark:focus:bg-red-400/20 cursor-pointer"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Profile icon removed as requested */}
           </div>
         </header>
 
@@ -277,8 +217,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                         ) : (
                           <User size={20} />
                         )}
-                      </div>
-                      <div>
+                      </div>                      <div>
                         <p className="font-medium">
                           {!authLoading &&
                             isAuthenticated &&
@@ -288,19 +227,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                             isAuthenticated &&
                             user &&
                             user.lastName}
-                        </p>
-                        <p
-                          className={`text-sm ${
-                            isSellerMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          {!authLoading &&
-                            isAuthenticated &&
-                            user &&
-                            user.email.split("@")[0] +
-                              (user.email.split("@")[1] === "iiit.ac.in"
-                                ? ""
-                                : "@" + user.email.split("@")[1].split(".")[0])}
                         </p>
                       </div>
                     </div>
@@ -407,9 +333,7 @@ const NavigationLinks = ({
     <div className="space-y-2">
       {links.map((link) => {
         const Icon = link.icon;
-        const isActive = pathname.startsWith(link.href);
-
-        return (
+        const isActive = pathname.startsWith(link.href);        return (
           <Link
             key={link.href}
             href={link.href}

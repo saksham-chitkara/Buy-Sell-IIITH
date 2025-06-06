@@ -330,11 +330,9 @@ export default function ItemPage({ params }: { params: Promise<{ id: string }> }
                   "Add to Cart"
                 )}
               </Button>
-            )}
-
-            {/* Out of Stock */}
+            )}            {/* Out of Stock */}
             {(!item.isAvailable || item.quantity === 0) && (
-              <Button disabled className="w-full" size="lg">
+              <Button disabled className="w-full bg-red-500 hover:bg-red-600 text-white" size="lg">
                 Out of Stock
               </Button>
             )}

@@ -33,16 +33,10 @@ const categories = [
   "Room Essentials", // Mattresses, pillows, reading lamps, storage boxes
   "Study Equipment", // Study tables, chairs, whiteboards, desk organizers
   "Sports & Fitness", // Cricket gear, gym equipment, sports shoes, badminton rackets
-  "Lab Equipment", // Lab coats, components, project materials
-  "Entertainment", // Musical instruments, gaming consoles, board games
-  "Bicycles", // Common mode of transport around campus
-  "Apparel", // College hoodies, t-shirts, formal wear for presentations
   "Tech Accessories", // Hard drives, pen drives, laptop accessories, cables
   "Books & Magazines", // Novels, magazines, competitive exam books
-  "Food & Appliances", // Mini fridges, electric kettles, induction plates
-  "Art & Stationery", // Drawing supplies, notebooks, project materials
-  "Event Equipment", // Speakers, lights, cameras for college events
-  "Transportation", // Bike/car pooling, local travel passes
+  "Lab Equipment", // Lab coats, components, project materials 
+  "Bicycles", // Common mode of transport around campus
   "Others", // Miscellaneous items
 ];
 
@@ -51,7 +45,7 @@ export default function CreateListing() {
     name: "",
     description: "",
     price: "",
-    quantity: "1",
+    quantity: "1", // Default quantity is always 1
     categories: [] as string[],
   });
   const [images, setImages] = useState<File[]>([]);
@@ -156,22 +150,13 @@ export default function CreateListing() {
       return;
     }
 
-    if (Number(formData.quantity) > 20) {
-      toast({
-        title: "Quantity too high",
-        description: "Limit is 20 per listing",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     const newFormData = new FormData();
     newFormData.append("name", formData.name);
     newFormData.append("description", formData.description);
     newFormData.append("price", formData.price);
-    newFormData.append("quantity", formData.quantity);
+    newFormData.append("quantity", "1"); // Always set quantity to 1
     newFormData.append("categories", formData.categories.join(","));
 
     // Append each image
@@ -235,61 +220,51 @@ export default function CreateListing() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">
-                  Price (₹)
-                </label>
-                <Input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  className="bg-white/5 border-white/10 focus:border-white/20 text-white"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">
-                  Quantity
-                </label>
-                <Input
-                  type="number"
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
-                  required
-                  min="1"
-                  className="bg-white/5 border-white/10 focus:border-white/20 text-white"
-                />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">
+                Price (₹)
+              </label>
+              <Input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                required
+                min="0"
+                className="bg-white/5 border-white/10 focus:border-white/20 text-white"
+              />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Categories</label>
               <Select
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    categories: [...prev.categories, value],
-                  }))
-                }
+                onValueChange={(value) => {
+                  // Check if the category is already selected
+                  if (!formData.categories.includes(value)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      categories: [...prev.categories, value],
+                    }));
+                  }
+                }}
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-black border-white/10">
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category}
-                      value={category}
-                      className="text-white hover:bg-white/10"
-                    >
-                      {category}
-                    </SelectItem>
-                  ))}
+                  {/* Only show categories that haven't been selected yet */}
+                  {categories
+                    .filter(category => !formData.categories.includes(category))
+                    .map((category) => (
+                      <SelectItem
+                        key={category}
+                        value={category}
+                        className="text-white hover:bg-white/10"
+                      >
+                        {category}
+                      </SelectItem>
+                    ))
+                  }
                 </SelectContent>
               </Select>
               <div className="flex flex-wrap gap-2 mt-2">

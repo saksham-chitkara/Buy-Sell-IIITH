@@ -159,6 +159,11 @@ export const completeDelivery = async (
     // Update order status
     order.status = "DELIVERED";
     await order.save();
+    
+    // Mark the item as unavailable since it has been purchased
+    await Item.findByIdAndUpdate(order.item, {
+      $set: { isAvailable: false, quantity: 0 }
+    });
 
     res.json({ message: "Delivery completed successfully" });
   } catch (error) {

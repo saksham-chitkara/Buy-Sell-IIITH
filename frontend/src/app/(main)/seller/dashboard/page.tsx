@@ -508,7 +508,7 @@ export default function SellerDashboard() {
                 Manage your item listings
               </CardDescription>
             </div>
-            <Button onClick={() => router.push("/seller/create-listing")}>
+            <Button onClick={() => router.push("/seller/create-listing")} className="bg-blue-600 hover:bg-blue-700">
               Create New Listing
             </Button>
           </div>
@@ -621,8 +621,10 @@ const ListingsGrid = ({ listings }: { listings: Listing[] }) => {
             />
             <div className="absolute top-2 right-2">
               <Badge
-                variant={
-                  listing && listing.isAvailable ? "default" : "secondary"
+                className={
+                  listing && listing.isAvailable 
+                    ? "bg-green-500 hover:bg-green-600" 
+                    : "bg-red-500 hover:bg-red-600"
                 }
               >
                 {listing && listing.isAvailable ? "Available" : "Sold Out"}
